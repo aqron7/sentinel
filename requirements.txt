@@ -1,0 +1,8 @@
+httpx
+anthropic
+apscheduler
+sqlmodel
+fastapi
+uvicorn
+pdfplumber
+python-dotenv
