@@ -1,3 +1,5 @@
+"""Phase 1 smoke-test: fetch awards -> Claude extract -> save -> print."""
+
 import asyncio
 import json
 
@@ -23,12 +25,12 @@ async def main() -> None:
         extracted = extract_contract(award)
         new = save_award(award, extracted)
         status = "NEW" if new else "dup"
-        keywords = json.loads(extracted.get("tech_keywords") or "[]") if isinstance(
-            extracted.get("tech_keywords"), str
-        ) else extracted.get("tech_keywords", [])
+        keywords = extracted.get("tech_keywords", [])
+        if isinstance(keywords, str):
+            keywords = json.loads(keywords or "[]")
         print(
             f"[{status}] {award['Recipient Name']:40} | "
-            f"{extracted['classification']:15} | "
+            f"{extracted.get('classification', '?'):15} | "
             f"{keywords}"
         )
         if new:
