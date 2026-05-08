@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 
 from sentinel.db.search import init_db, save_award
-from sentinel.extract.claude import extract_contract
+from sentinel.extract.llm import extract_contract
 from sentinel.ingest.usaspending import fetch_recent_awards
 
 load_dotenv()

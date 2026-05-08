@@ -1,25 +1,54 @@
+"""LLM extraction layer. Uses Groq + Llama 3.3 70B with strict JSON output."""
+
 import json
 
-import anthropic
+from groq import Groq
 
 from sentinel.extract.prompts import (
     CONTRACT_EXTRACTION_PROMPT,
     PATENT_EXTRACTION_PROMPT,
     SOLICITATION_EXTRACTION_PROMPT,
+    TECH_KEYWORDS,
 )
 
-client = anthropic.Anthropic()
-MODEL = "claude-opus-4-7"
+MODEL = "llama-3.3-70b-versatile"
 MAX_TOKENS = 512
+
+_client: Groq | None = None
+
+
+def _get_client() -> Groq:
+    global _client
+    if _client is None:
+        _client = Groq()
+    return _client
+
+CANONICAL_KEYWORDS = {k.strip() for k in TECH_KEYWORDS.split(",")}
+
+
+def _filter_keywords(values) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    seen: list[str] = []
+    for v in values:
+        if isinstance(v, str) and v in CANONICAL_KEYWORDS and v not in seen:
+            seen.append(v)
+    return seen
 
 
 def _call(prompt: str) -> dict:
-    msg = client.messages.create(
+    completion = _get_client().chat.completions.create(
         model=MODEL,
         max_tokens=MAX_TOKENS,
+        temperature=0.1,
+        response_format={"type": "json_object"},
         messages=[{"role": "user", "content": prompt}],
     )
-    return json.loads(msg.content[0].text)
+    raw = completion.choices[0].message.content or "{}"
+    data = json.loads(raw)
+    if "tech_keywords" in data:
+        data["tech_keywords"] = _filter_keywords(data["tech_keywords"])
+    return data
 
 
 def extract_contract(award: dict) -> dict:

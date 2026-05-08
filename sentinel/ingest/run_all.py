@@ -12,7 +12,7 @@ from sentinel.db.search import (
     save_patent,
     save_solicitation,
 )
-from sentinel.extract.claude import (
+from sentinel.extract.llm import (
     extract_contract,
     extract_patent,
     extract_solicitation,
@@ -40,6 +40,9 @@ async def _ingest_awards(limit: int) -> int:
 async def _ingest_solicitations(limit: int) -> int:
     if not os.environ.get("SAM_API_KEY"):
         print("SAM_API_KEY unset; skipping solicitation ingest.")
+        return 0
+    if not os.environ.get("GROQ_API_KEY"):
+        print("GROQ_API_KEY unset; skipping solicitation ingest.")
         return 0
     sols = await fetch_open_solicitations(days_back=14)
     inserted = 0
