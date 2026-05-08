@@ -10,6 +10,33 @@ import {
 } from "../api";
 import { Tag } from "../components/Tag";
 
+const LS_NAME = "sentinel_my_name";
+
+function getMyName() {
+  return localStorage.getItem(LS_NAME) ?? "[Your Name]";
+}
+
+function buildEmailTemplate(lab: RutgersLab): string {
+  const lastName = lab.faculty.split(" ").pop() ?? lab.faculty;
+  const domain = lab.relevant_keywords[0] ?? "your research area";
+  return `Subject: Undergraduate Research Opportunity Inquiry — ${lab.name}
+
+Dear Prof. ${lastName},
+
+My name is ${getMyName()}, and I am a first-year student in the ${lab.department} program at Rutgers. I came across your work in ${lab.description.split(".")[0].toLowerCase()} and am very interested in the intersection of ${domain} and defense applications.
+
+I am eager to contribute to your lab and gain research experience early in my degree. I have reviewed your recent work and believe I can support the team even at an introductory level.
+
+Would you be available for a brief 15-minute meeting to discuss potential opportunities in your group?
+
+Thank you for your time.
+
+Best regards,
+${getMyName()}
+Rutgers University — ${lab.department}
+[Your email] | [Your phone]`;
+}
+
 const URGENCY_TONE: Record<string, string> = {
   "Do it this semester": "text-ember-300",
   "Apply December–January for summer": "text-sky-300",
@@ -220,6 +247,15 @@ function LabsTab({
   expanded: string | null;
   onToggle: (name: string) => void;
 }) {
+  const [copiedLab, setCopiedLab] = useState<string | null>(null);
+
+  const copyEmail = (lab: RutgersLab) => {
+    navigator.clipboard.writeText(buildEmailTemplate(lab)).then(() => {
+      setCopiedLab(lab.name);
+      setTimeout(() => setCopiedLab(null), 2000);
+    });
+  };
+
   if (labs.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-ink-500">
@@ -261,14 +297,26 @@ function LabsTab({
                 <div className="text-[10px] uppercase tracking-wider text-ink-500 mb-1">How to apply</div>
                 <p className="text-xs text-ink-300">{lab.how_to_apply}</p>
               </div>
-              <a
-                href={lab.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] font-medium text-ember-400 hover:text-ember-300 hover:underline"
-              >
-                Lab website →
-              </a>
+              <div className="flex items-center gap-3">
+                <a
+                  href={lab.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-medium text-ember-400 hover:text-ember-300 hover:underline"
+                >
+                  Lab website →
+                </a>
+                <button
+                  onClick={(e) => { e.stopPropagation(); copyEmail(lab); }}
+                  className="rounded-md border border-ink-700 px-2.5 py-1 text-[11px] font-medium text-ink-300 transition hover:border-ink-500 hover:text-ink-100"
+                >
+                  {copiedLab === lab.name ? "✓ Copied!" : "Copy email draft"}
+                </button>
+              </div>
+              {/* Email preview */}
+              <pre className="overflow-x-auto rounded-lg border border-ink-800 bg-ink-950 p-3 text-[11px] leading-relaxed text-ink-400 whitespace-pre-wrap">
+                {buildEmailTemplate(lab)}
+              </pre>
             </div>
           )}
         </div>

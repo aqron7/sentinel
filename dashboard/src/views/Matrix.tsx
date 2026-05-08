@@ -31,9 +31,13 @@ function cellTotal(c: MatrixCell, maxes: Record<CellKey, number>): number {
 export function Matrix({
   data,
   onContractorClick,
+  watchlist,
+  onWatchlistToggle,
 }: {
   data: Aggregates;
   onContractorClick?: (contractor: string) => void;
+  watchlist?: Set<string>;
+  onWatchlistToggle?: (contractor: string) => void;
 }) {
   const { contractors, tech_keywords, matrix } = data;
 
@@ -67,16 +71,32 @@ export function Matrix({
           {contractors.map((c, i) => (
             <tr key={c} className="group">
               <th className="sticky left-0 z-10 bg-ink-900/60 px-3 py-2 text-left text-sm font-medium text-ink-100">
-                {onContractorClick ? (
-                  <button
-                    onClick={() => onContractorClick(c)}
-                    className="text-left underline-offset-2 hover:text-ember-300 hover:underline transition-colors"
-                  >
-                    {c}
-                  </button>
-                ) : (
-                  c
-                )}
+                <div className="flex items-center gap-1.5">
+                  {onWatchlistToggle && (
+                    <button
+                      onClick={() => onWatchlistToggle(c)}
+                      title={watchlist?.has(c) ? "Remove from watchlist" : "Add to watchlist"}
+                      className={
+                        "text-base leading-none transition-colors " +
+                        (watchlist?.has(c)
+                          ? "text-ember-400"
+                          : "text-ink-700 hover:text-ink-400")
+                      }
+                    >
+                      {watchlist?.has(c) ? "★" : "☆"}
+                    </button>
+                  )}
+                  {onContractorClick ? (
+                    <button
+                      onClick={() => onContractorClick(c)}
+                      className="text-left underline-offset-2 hover:text-ember-300 hover:underline transition-colors"
+                    >
+                      {c}
+                    </button>
+                  ) : (
+                    c
+                  )}
+                </div>
               </th>
               {tech_keywords.map((kw, j) => {
                 const cell = matrix[i][j];
