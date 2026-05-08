@@ -11,6 +11,7 @@ import { Matrix } from "./views/Matrix";
 import { MyProfile } from "./views/MyProfile";
 import { PatentTimeline } from "./views/PatentTimeline";
 import { RecentAwards } from "./views/RecentAwards";
+import { SchoolPlanner } from "./views/SchoolPlanner";
 import { Solicitations } from "./views/Solicitations";
 import { fmtUSDCompact } from "./format";
 
@@ -169,6 +170,22 @@ export default function App() {
         )}
         {recommendations.status === "ready" && (
           <CareerGuide data={recommendations.data} />
+        )}
+      </Card>
+
+      <Card
+        title="School & major planner"
+        subtitle="Find schools aligned with contract momentum, explore your major's defense value, and locate clubs at any school."
+      >
+        {recommendations.status === "loading" && <Loading />}
+        {recommendations.status === "error" && (
+          <ErrorState error={recommendations.error} />
+        )}
+        {recommendations.status === "ready" && (
+          <SchoolPlanner
+            topKeywords={recommendations.data.top_keywords}
+            momentumScores={{}}
+          />
         )}
       </Card>
 

@@ -11,9 +11,18 @@ import {
 import { Tag } from "../components/Tag";
 
 const LS_NAME = "sentinel_my_name";
+const LS_SCHOOL = "sentinel_school";
 
 function getMyName() {
   return localStorage.getItem(LS_NAME) ?? "[Your Name]";
+}
+
+function getMySchool() {
+  return localStorage.getItem(LS_SCHOOL) ?? "";
+}
+
+function isRutgers(school: string) {
+  return !school || school.toLowerCase().includes("rutgers");
 }
 
 function buildEmailTemplate(lab: RutgersLab): string {
@@ -49,19 +58,22 @@ const URGENCY_TONE: Record<string, string> = {
 
 type Tab = "apply" | "skills" | "labs" | "clubs" | "scholarships" | "timeline";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "apply", label: "Apply Now" },
-  { id: "skills", label: "Skills Map" },
-  { id: "labs", label: "Rutgers Labs" },
-  { id: "clubs", label: "Clubs" },
-  { id: "scholarships", label: "Scholarships" },
-  { id: "timeline", label: "4-Year Plan" },
-];
-
 export function CareerGuide({ data }: { data: Recommendations }) {
   const [tab, setTab] = useState<Tab>("apply");
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
   const [expandedLab, setExpandedLab] = useState<string | null>(null);
+  const [mySchool] = useState(() => getMySchool());
+
+  const atRutgers = isRutgers(mySchool);
+
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "apply", label: "Apply Now" },
+    { id: "skills", label: "Skills Map" },
+    { id: "labs", label: atRutgers ? "Rutgers Labs" : "Find Labs" },
+    { id: "clubs", label: "Clubs" },
+    { id: "scholarships", label: "Scholarships" },
+    { id: "timeline", label: "4-Year Plan" },
+  ];
 
   return (
     <div className="flex flex-col gap-5">
@@ -114,6 +126,7 @@ export function CareerGuide({ data }: { data: Recommendations }) {
             skills={data.skills_map}
             expanded={expandedSkill}
             onToggle={(kw) => setExpandedSkill(expandedSkill === kw ? null : kw)}
+            atRutgers={atRutgers}
           />
         )}
         {tab === "labs" && (
@@ -121,6 +134,9 @@ export function CareerGuide({ data }: { data: Recommendations }) {
             labs={data.rutgers_labs}
             expanded={expandedLab}
             onToggle={(n) => setExpandedLab(expandedLab === n ? null : n)}
+            atRutgers={atRutgers}
+            mySchool={mySchool}
+            topKeywords={data.top_keywords}
           />
         )}
         {tab === "clubs" && <ClubsTab clubs={data.clubs} />}
@@ -177,10 +193,12 @@ function SkillsTab({
   skills,
   expanded,
   onToggle,
+  atRutgers,
 }: {
   skills: SkillEntry[];
   expanded: string | null;
   onToggle: (kw: string) => void;
+  atRutgers: boolean;
 }) {
   return (
     <div className="flex flex-col divide-y divide-ink-800/60">
@@ -206,7 +224,7 @@ function SkillsTab({
               <p className="text-xs text-ink-300">{s.why}</p>
               <div className="grid gap-3 sm:grid-cols-3 text-xs">
                 <div>
-                  <div className="mb-1 text-[10px] uppercase tracking-wider text-ink-500">Rutgers courses</div>
+                  <div className="mb-1 text-[10px] uppercase tracking-wider text-ink-500">{atRutgers ? "Rutgers courses" : "Relevant courses"}</div>
                   <ul className="space-y-1">
                     {s.courses.map((c) => (
                       <li key={c} className="text-ink-300">• {c}</li>
@@ -238,14 +256,29 @@ function SkillsTab({
   );
 }
 
+const GENERIC_LAB_CATEGORIES = [
+  { type: "Hypersonics / Propulsion", search: "[school] hypersonics propulsion research lab", keywords: ["hypersonics", "propulsion"] },
+  { type: "Autonomy / Robotics", search: "[school] autonomous systems robotics research lab", keywords: ["autonomy", "AI/ML", "UAS"] },
+  { type: "Radar / Signal Processing", search: "[school] radar signal processing research lab", keywords: ["radar", "electronic warfare", "ISR"] },
+  { type: "Cybersecurity", search: "[school] cybersecurity research lab", keywords: ["cyber", "C2", "JADC2"] },
+  { type: "Space Systems", search: "[school] space systems satellite research lab", keywords: ["space", "ISR", "communications"] },
+  { type: "Directed Energy", search: "[school] directed energy laser plasma research lab", keywords: ["directed energy", "nuclear"] },
+];
+
 function LabsTab({
   labs,
   expanded,
   onToggle,
+  atRutgers,
+  mySchool,
+  topKeywords,
 }: {
   labs: RutgersLab[];
   expanded: string | null;
   onToggle: (name: string) => void;
+  atRutgers: boolean;
+  mySchool: string;
+  topKeywords: string[];
 }) {
   const [copiedLab, setCopiedLab] = useState<string | null>(null);
 
@@ -255,6 +288,59 @@ function LabsTab({
       setTimeout(() => setCopiedLab(null), 2000);
     });
   };
+
+  if (!atRutgers) {
+    const school = mySchool || "your school";
+    const relevant = GENERIC_LAB_CATEGORIES.filter((c) =>
+      c.keywords.some((kw) => topKeywords.includes(kw)),
+    );
+    const toShow = relevant.length > 0 ? relevant : GENERIC_LAB_CATEGORIES;
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="text-xs text-ink-400">
+          Use these search links to find defense-relevant research labs at {school}.
+          Email the professor directly — most labs welcome motivated undergraduates regardless of year.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {toShow.map((c) => {
+            const q = c.search.replace("[school]", school);
+            const url = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+            const hot = c.keywords.some((kw) => topKeywords.includes(kw));
+            return (
+              <a
+                key={c.type}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={
+                  "flex flex-col gap-1.5 rounded-xl border p-4 transition hover:opacity-90 " +
+                  (hot ? "border-ember-500/30 bg-ember-500/5" : "border-ink-800 bg-ink-900/30")
+                }
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-ink-100">{c.type}</span>
+                  {hot && <span className="text-[10px] font-medium text-ember-400">★ hot right now</span>}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {c.keywords.map((kw) => (
+                    <span key={kw} className="rounded-md border border-ink-700 px-1.5 py-0.5 text-[10px] text-ink-400">{kw}</span>
+                  ))}
+                </div>
+                <span className="mt-1 text-[11px] font-medium text-ember-400">Find at {school} →</span>
+              </a>
+            );
+          })}
+        </div>
+        <div className="rounded-lg border border-ink-800 bg-ink-900/30 px-4 py-3">
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Cold email tip</div>
+          <p className="text-xs text-ink-400">
+            Keep it short: who you are (year + major), which specific project caught your eye, and ask for a 15-minute chat.
+            Professors respond to specificity — mention a paper title or grant number, not just "I like your research."
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (labs.length === 0) {
     return (

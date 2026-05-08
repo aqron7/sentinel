@@ -667,3 +667,297 @@ APPLY_NOW: list[dict] = [
         "relevant_keywords": ["hypersonics", "propulsion", "UAS", "space", "VTOL"],
     },
 ]
+
+
+# ---------------------------------------------------------------------------
+# Major → relevant tech domains mapping (school-agnostic)
+# ---------------------------------------------------------------------------
+
+MAJOR_DOMAINS: dict[str, dict] = {
+    "Aerospace Engineering": {
+        "keywords": ["hypersonics", "propulsion", "UAS", "VTOL", "space", "stealth", "ISR", "autonomy"],
+        "description": "Directly maps to the highest-funded defense domains. Hypersonics, propulsion, and UAS are all top-5 contract areas.",
+        "generic_courses": ["Aerodynamics", "Gas Dynamics / Compressible Flow", "Flight Dynamics & Control", "Orbital Mechanics", "Propulsion Systems", "Structures", "CFD"],
+    },
+    "Mechanical Engineering": {
+        "keywords": ["propulsion", "hypersonics", "VTOL", "logistics", "autonomy", "UAS"],
+        "description": "Strong overlap with propulsion, thermal systems, and autonomous vehicles. Less direct than AE but very employable.",
+        "generic_courses": ["Thermodynamics", "Fluid Mechanics", "Heat Transfer", "Dynamics & Control", "Manufacturing", "Robotics"],
+    },
+    "Electrical Engineering": {
+        "keywords": ["radar", "electronic warfare", "communications", "C2", "directed energy", "ISR", "cyber"],
+        "description": "Radar, EW, and communications are Raytheon and L3Harris's core business — EE grads are their primary hire.",
+        "generic_courses": ["Electromagnetics", "Signals & Systems", "Digital Signal Processing", "RF Circuits", "Antenna Theory", "Communications Theory"],
+    },
+    "Computer Science": {
+        "keywords": ["AI/ML", "autonomy", "cyber", "C2", "JADC2", "ISR"],
+        "description": "AI/ML and cyber are the fastest-growing areas in DoD spending. CS grads command premiums at every prime contractor.",
+        "generic_courses": ["Machine Learning", "Computer Security", "Operating Systems", "Distributed Systems", "Algorithms", "Computer Vision"],
+    },
+    "Computer Engineering": {
+        "keywords": ["cyber", "C2", "communications", "AI/ML", "electronic warfare", "autonomy"],
+        "description": "Bridge between hardware and software — embedded systems in weapons platforms is a major gap DoD is trying to fill.",
+        "generic_courses": ["Embedded Systems", "Digital Design", "Computer Architecture", "Real-Time Systems", "FPGAs", "Networking"],
+    },
+    "Systems Engineering": {
+        "keywords": ["C2", "JADC2", "logistics", "autonomy", "ISR"],
+        "description": "Systems engineers are needed for every major program — you work across all domains rather than specializing in one.",
+        "generic_courses": ["Systems Architecture", "Requirements Engineering", "Modeling & Simulation", "Human Factors", "Reliability", "Test & Evaluation"],
+    },
+    "Physics": {
+        "keywords": ["directed energy", "nuclear", "radar", "space", "hypersonics"],
+        "description": "Directed energy and nuclear are physics-heavy domains with few qualified engineers — high demand, lower competition.",
+        "generic_courses": ["Electromagnetism", "Quantum Mechanics", "Nuclear Physics", "Optics / Photonics", "Plasma Physics", "Thermodynamics"],
+    },
+    "Nuclear Engineering": {
+        "keywords": ["nuclear", "propulsion", "space"],
+        "description": "Nuclear triad modernization is a multi-decade program. Niche but extremely stable — very few universities offer this degree.",
+        "generic_courses": ["Nuclear Reactor Theory", "Radiation Shielding", "Thermal-Hydraulics", "Nuclear Materials", "MCNP Simulation"],
+    },
+    "Ocean / Marine Engineering": {
+        "keywords": ["sonar", "autonomy", "UAS", "C2", "communications"],
+        "description": "Undersea warfare is a growing DoD priority. General Dynamics and Raytheon hire ocean engineers for submarine programs.",
+        "generic_courses": ["Underwater Acoustics", "Fluid Mechanics", "Ocean Structures", "Marine Propulsion", "Hydrodynamics"],
+    },
+    "Chemical Engineering": {
+        "keywords": ["propulsion", "nuclear", "directed energy"],
+        "description": "Energetics and propellant chemistry is a niche area with consistent DoD funding — General Atomics and Aerojet Rocketdyne are top employers.",
+        "generic_courses": ["Thermodynamics", "Reaction Engineering", "Transport Phenomena", "Materials Science", "Process Control"],
+    },
+    "Mathematics / Applied Math": {
+        "keywords": ["AI/ML", "autonomy", "cyber", "C2", "radar"],
+        "description": "Strong math background is prized in AI, cryptography, and signal processing roles — pairs well with a technical minor.",
+        "generic_courses": ["Linear Algebra", "Probability & Statistics", "Numerical Methods", "Differential Equations", "Optimization", "Cryptography"],
+    },
+    "Cybersecurity": {
+        "keywords": ["cyber", "C2", "JADC2", "communications"],
+        "description": "Dedicated cyber programs are still rare — graduates are in very high demand across all DoD branches and intelligence agencies.",
+        "generic_courses": ["Network Security", "Penetration Testing", "Reverse Engineering", "Cryptography", "Malware Analysis", "Incident Response"],
+    },
+}
+
+
+# ---------------------------------------------------------------------------
+# School database: top programs per defense tech domain
+# ---------------------------------------------------------------------------
+
+SCHOOL_DATABASE: list[dict] = [
+    # ---- HYPERSONICS / AERODYNAMICS ----
+    {
+        "name": "Georgia Tech",
+        "full_name": "Georgia Institute of Technology",
+        "location": "Atlanta, GA",
+        "relevant_keywords": ["hypersonics", "propulsion", "UAS", "autonomy", "radar", "electronic warfare", "AI/ML", "space", "stealth", "C2"],
+        "strong_majors": ["Aerospace Engineering", "Electrical Engineering", "Computer Science", "Mechanical Engineering"],
+        "defense_strength": "top_5",
+        "why": "GTRI (Georgia Tech Research Institute) is one of the largest DoD-funded university research centers in the country. Strong across hypersonics, radar, EW, and autonomy. Consistently ranks #1 or #2 for defense research funding among universities.",
+        "notable_programs": ["GTRI (Georgia Tech Research Institute)", "School of Aerospace Engineering", "Institute for Robotics & Intelligent Machines (IRIM)"],
+        "defense_connections": "AFRL, DARPA, ARL, Lockheed, Northrop, Raytheon all recruit heavily. Atlanta proximity to Dobbins ARB.",
+        "url": "https://www.gatech.edu",
+    },
+    {
+        "name": "MIT",
+        "full_name": "Massachusetts Institute of Technology",
+        "location": "Cambridge, MA",
+        "relevant_keywords": ["hypersonics", "propulsion", "autonomy", "AI/ML", "space", "nuclear", "radar", "cyber", "directed energy", "C2", "JADC2"],
+        "strong_majors": ["Aerospace Engineering", "Electrical Engineering", "Computer Science", "Nuclear Engineering", "Physics"],
+        "defense_strength": "top_5",
+        "why": "MIT Lincoln Laboratory is adjacent to campus and one of the premier DoD FFRDC labs — students can work there while enrolled. Broad strength across all defense domains.",
+        "notable_programs": ["MIT Lincoln Laboratory (FFRDC)", "AeroAstro Dept", "CSAIL", "Nuclear Science & Engineering"],
+        "defense_connections": "Lincoln Lab, DARPA, NRL, ARL. Nearly every prime contractor recruits on campus.",
+        "url": "https://www.mit.edu",
+    },
+    {
+        "name": "Purdue University",
+        "full_name": "Purdue University",
+        "location": "West Lafayette, IN",
+        "relevant_keywords": ["propulsion", "hypersonics", "UAS", "space", "nuclear", "autonomy", "AI/ML"],
+        "strong_majors": ["Aerospace Engineering", "Nuclear Engineering", "Mechanical Engineering", "Computer Science"],
+        "defense_strength": "top_10",
+        "why": "Purdue's AAE department is among the best in the world — cradle of astronauts and propulsion engineers. Zucrow Laboratories is one of the premier university propulsion research facilities.",
+        "notable_programs": ["Zucrow Laboratories (propulsion)", "School of Aeronautics & Astronautics", "Nuclear Engineering"],
+        "defense_connections": "Strong Air Force and NASA ties. Rolls-Royce, GE Aerospace, Northrop, Boeing all recruit heavily.",
+        "url": "https://www.purdue.edu",
+    },
+    {
+        "name": "Caltech",
+        "full_name": "California Institute of Technology",
+        "location": "Pasadena, CA",
+        "relevant_keywords": ["hypersonics", "propulsion", "space", "directed energy", "autonomy"],
+        "strong_majors": ["Aerospace Engineering", "Physics", "Mechanical Engineering"],
+        "defense_strength": "top_5",
+        "why": "GALCIT (Graduate Aerospace Laboratories) invented modern rocketry. Proximity to JPL and heavy DoD/NASA research. Small school but extraordinary per-capita research output.",
+        "notable_programs": ["GALCIT (Graduate Aerospace Laboratories)", "JPL affiliation"],
+        "defense_connections": "JPL, AFRL, Northrop Grumman (HQ nearby). Major space and hypersonics programs.",
+        "url": "https://www.caltech.edu",
+    },
+    {
+        "name": "University of Michigan",
+        "full_name": "University of Michigan — Ann Arbor",
+        "location": "Ann Arbor, MI",
+        "relevant_keywords": ["autonomy", "propulsion", "space", "nuclear", "AI/ML", "UAS", "radar", "cyber"],
+        "strong_majors": ["Aerospace Engineering", "Computer Science", "Electrical Engineering", "Nuclear Engineering", "Mechanical Engineering"],
+        "defense_strength": "top_10",
+        "why": "Top-ranked AE and nuclear programs. Strong autonomous systems research. Michigan is the only Big Ten school with a nuclear engineering program ranked in the top 5.",
+        "notable_programs": ["College of Engineering", "Michigan Institute for Computational Discovery & Engineering", "Ford Motor Co. Robotics Building"],
+        "defense_connections": "ARL, Air Force Research, Lockheed, Boeing, General Dynamics.",
+        "url": "https://umich.edu",
+    },
+    # ---- RADAR / EW / SIGNALS ----
+    {
+        "name": "Ohio State University",
+        "full_name": "Ohio State University",
+        "location": "Columbus, OH",
+        "relevant_keywords": ["radar", "electronic warfare", "communications", "ISR", "directed energy"],
+        "strong_majors": ["Electrical Engineering", "Computer Science"],
+        "defense_strength": "top_10",
+        "why": "The ElectroScience Laboratory (ESL) at Ohio State is one of the most recognized university radar and antenna research centers in the world. Direct ties to AFRL Wright-Patterson AFB (20 min away).",
+        "notable_programs": ["ElectroScience Laboratory (ESL)", "Translational Data Analytics Institute"],
+        "defense_connections": "AFRL Wright-Patterson AFB is 20 minutes away — most ESL students work there. Raytheon and L3Harris recruit heavily.",
+        "url": "https://www.osu.edu",
+    },
+    {
+        "name": "University of Texas at Austin",
+        "full_name": "University of Texas at Austin",
+        "location": "Austin, TX",
+        "relevant_keywords": ["radar", "communications", "autonomy", "propulsion", "space", "hypersonics", "C2"],
+        "strong_majors": ["Aerospace Engineering", "Electrical Engineering", "Computer Science"],
+        "defense_strength": "top_10",
+        "why": "Applied Research Laboratories (ARL:UT) is a major DoD-funded center for sonar, radar, and communications. Strong AE and EE programs with direct DoD lab affiliation.",
+        "notable_programs": ["Applied Research Laboratories (ARL:UT)", "Cockrell School of Engineering"],
+        "defense_connections": "ARL:UT (DoD UARC), NRL affiliation, strong Texas defense industry (L3Harris, Lockheed Fort Worth).",
+        "url": "https://www.utexas.edu",
+    },
+    {
+        "name": "Virginia Tech",
+        "full_name": "Virginia Polytechnic Institute and State University",
+        "location": "Blacksburg, VA",
+        "relevant_keywords": ["communications", "radar", "electronic warfare", "cyber", "autonomy", "UAS", "C2"],
+        "strong_majors": ["Electrical Engineering", "Aerospace Engineering", "Computer Science", "Computer Engineering"],
+        "defense_strength": "top_10",
+        "why": "MPRG (Mobile and Portable Radio Research Group) is one of the world's leading wireless communications research labs. Northern Virginia campus puts students near the Pentagon and major defense contractors.",
+        "notable_programs": ["Hume Center for National Security & Technology", "MPRG (wireless comms)", "Virginia Space Grant Consortium"],
+        "defense_connections": "Pentagon corridor, MITRE, SAIC, Leidos, Booz Allen all hire heavily. Hume Center has active DoD programs.",
+        "url": "https://www.vt.edu",
+    },
+    # ---- AUTONOMY / ROBOTICS / AI ----
+    {
+        "name": "Carnegie Mellon University",
+        "full_name": "Carnegie Mellon University",
+        "location": "Pittsburgh, PA",
+        "relevant_keywords": ["autonomy", "AI/ML", "cyber", "C2", "JADC2", "logistics", "ISR"],
+        "strong_majors": ["Computer Science", "Electrical Engineering", "Mechanical Engineering", "Systems Engineering"],
+        "defense_strength": "top_5",
+        "why": "CMU's Robotics Institute is the #1 ranked robotics program in the world. CyLab is one of the top cybersecurity research centers globally. NREC (National Robotics Engineering Center) does applied DoD robotics.",
+        "notable_programs": ["Robotics Institute", "CyLab (cybersecurity)", "NREC (DoD robotics)", "Software Engineering Institute (SEI — FFRDC)"],
+        "defense_connections": "SEI is a DoD FFRDC. DARPA, ARL, NRL all fund CMU research. Every prime contractor recruits.",
+        "url": "https://www.cmu.edu",
+    },
+    {
+        "name": "Stanford University",
+        "full_name": "Stanford University",
+        "location": "Stanford, CA",
+        "relevant_keywords": ["autonomy", "AI/ML", "space", "propulsion", "ISR", "C2"],
+        "strong_majors": ["Aerospace Engineering", "Computer Science", "Electrical Engineering"],
+        "defense_strength": "top_10",
+        "why": "Top AI/ML research globally — strong crossover to defense autonomy. Stanford AeroAstro has deep NASA and AFRL connections. SRI International (defense-adjacent) is nearby.",
+        "notable_programs": ["HAI (Human-Centered AI)", "AeroAstro", "Stanford Space Rendezvous Lab"],
+        "defense_connections": "DARPA funding, Lockheed Advanced Development (Skunk Works) in Palmdale, SRI International.",
+        "url": "https://www.stanford.edu",
+    },
+    {
+        "name": "University of Illinois Urbana-Champaign",
+        "full_name": "University of Illinois at Urbana-Champaign",
+        "location": "Urbana, IL",
+        "relevant_keywords": ["AI/ML", "cyber", "autonomy", "communications", "radar", "C2"],
+        "strong_majors": ["Computer Science", "Electrical Engineering", "Aerospace Engineering"],
+        "defense_strength": "top_10",
+        "why": "UIUC CS and ECE are consistently top-5 ranked. Information Trust Institute is a major DoD/DHS cybersecurity center. Strong AI research with direct defense applications.",
+        "notable_programs": ["Information Trust Institute", "Coordinated Science Lab", "Beckman Institute"],
+        "defense_connections": "DARPA, DHS, NSA fund research. Proximity to Scott AFB and Chanute Air Force history. Major tech company recruiting.",
+        "url": "https://illinois.edu",
+    },
+    # ---- CYBER ----
+    {
+        "name": "University of Maryland",
+        "full_name": "University of Maryland — College Park",
+        "location": "College Park, MD",
+        "relevant_keywords": ["cyber", "AI/ML", "space", "hypersonics", "C2", "autonomy", "ISR"],
+        "strong_majors": ["Computer Science", "Electrical Engineering", "Aerospace Engineering", "Cybersecurity"],
+        "defense_strength": "top_5",
+        "why": "Location is everything — UMD is 10 miles from NSA headquarters and 20 miles from the Pentagon. UMIACS is a major research center. Strong joint hypersonics research with DoD.",
+        "notable_programs": ["UMIACS (computer science)", "Maryland Cybersecurity Center (MC2)", "Joint Hypersonics Transition Program (DoD-funded)"],
+        "defense_connections": "NSA, NRL, APL (Johns Hopkins-affiliated but nearby), DARPA. Most defense intel community agencies recruit from UMD.",
+        "url": "https://umd.edu",
+    },
+    {
+        "name": "Johns Hopkins University",
+        "full_name": "Johns Hopkins University",
+        "location": "Baltimore, MD",
+        "relevant_keywords": ["cyber", "AI/ML", "ISR", "autonomy", "C2", "space"],
+        "strong_majors": ["Computer Science", "Electrical Engineering", "Systems Engineering", "Applied Mathematics"],
+        "defense_strength": "top_5",
+        "why": "APL (Applied Physics Laboratory) is one of the largest DoD UARCs in the country and is directly affiliated with JHU. Students can work there as undergrads. Focus on missiles, space, cyber, and ISR.",
+        "notable_programs": ["APL — Johns Hopkins Applied Physics Laboratory (DoD UARC)", "Whiting School of Engineering"],
+        "defense_connections": "APL is a DoD UARC — extremely close pipeline to cleared work. Navy, Missile Defense Agency, DARPA.",
+        "url": "https://www.jhu.edu",
+    },
+    # ---- NUCLEAR ----
+    {
+        "name": "Penn State University",
+        "full_name": "Pennsylvania State University",
+        "location": "University Park, PA",
+        "relevant_keywords": ["nuclear", "propulsion", "radar", "communications", "cyber", "electronic warfare"],
+        "strong_majors": ["Nuclear Engineering", "Mechanical Engineering", "Electrical Engineering", "Aerospace Engineering"],
+        "defense_strength": "top_10",
+        "why": "Penn State's Applied Research Laboratory (ARL/PSU) is a DoD UARC focused on naval warfare — sonar, underwater systems, propulsion. Strong nuclear and EE programs.",
+        "notable_programs": ["Applied Research Laboratory (ARL/PSU — DoD UARC)", "Nuclear Engineering", "Computational & Data Sciences"],
+        "defense_connections": "ARL/PSU (Navy UARC), Naval Nuclear Propulsion Program, NAVSEA.",
+        "url": "https://www.psu.edu",
+    },
+    # ---- AVIATION / UAS ----
+    {
+        "name": "Embry-Riddle Aeronautical University",
+        "full_name": "Embry-Riddle Aeronautical University",
+        "location": "Daytona Beach, FL / Prescott, AZ",
+        "relevant_keywords": ["UAS", "VTOL", "propulsion", "autonomy", "space", "ISR"],
+        "strong_majors": ["Aerospace Engineering", "Mechanical Engineering", "Computer Science"],
+        "defense_strength": "top_10",
+        "why": "Most specialized aviation/aerospace university in the US. UAS research is a core focus. High placement rate at defense aviation contractors. Multiple campuses near military bases.",
+        "notable_programs": ["BEYOND Center for UAS Research", "Eagle Flight Research Center", "Daytona Beach & Prescott campuses"],
+        "defense_connections": "Co-located with Daytona Beach International Airport. Strong Air Force and Navy aviation contractor pipeline. General Atomics, Northrop UAS divisions.",
+        "url": "https://www.erau.edu",
+    },
+    # ---- SPACE ----
+    {
+        "name": "University of Colorado Boulder",
+        "full_name": "University of Colorado Boulder",
+        "location": "Boulder, CO",
+        "relevant_keywords": ["space", "propulsion", "autonomy", "communications", "ISR"],
+        "strong_majors": ["Aerospace Engineering", "Electrical Engineering", "Physics"],
+        "defense_strength": "top_10",
+        "why": "LASP (Laboratory for Atmospheric and Space Physics) is one of the premier space research labs in the world. Boulder is a hub for the space industry — Ball Aerospace, Lockheed Space, United Launch Alliance all headquartered nearby.",
+        "notable_programs": ["LASP (Laboratory for Atmospheric and Space Physics)", "Colorado Space Grant Consortium"],
+        "defense_connections": "Space Force Space Command is in Colorado Springs (1 hr south). Ball Aerospace, Lockheed Martin Space, ULA, SNC all recruit heavily.",
+        "url": "https://www.colorado.edu",
+    },
+    # ---- COMMUNICATIONS / WIRELESS ----
+    {
+        "name": "Rutgers University",
+        "full_name": "Rutgers, The State University of New Jersey",
+        "location": "New Brunswick, NJ",
+        "relevant_keywords": ["communications", "C2", "JADC2", "electronic warfare", "cyber", "radar", "autonomy", "AI/ML", "hypersonics", "propulsion", "UAS", "space"],
+        "strong_majors": ["Aerospace Engineering", "Electrical Engineering", "Computer Science", "Mechanical Engineering"],
+        "defense_strength": "regional",
+        "why": "WINLAB is one of the premier university wireless/spectrum research labs with active DARPA and ARL funding. Strong MAE program with hypersonics and UAS labs. Well-located for NJ/NY/PA defense employers.",
+        "notable_programs": ["WINLAB (DARPA/ARL-funded wireless research)", "Gas Dynamics Research Lab (hypersonics)", "SPACE Lab", "CSPL (radar/signal processing)"],
+        "defense_connections": "Lockheed Martin NJ, Boeing Philadelphia, L3Harris, BAE Systems NJ. NRL and ARL both within driving distance.",
+        "url": "https://www.rutgers.edu",
+    },
+]
+
+# Majors list for UI dropdowns
+MAJORS_LIST = sorted(MAJOR_DOMAINS.keys())
+
+# Schools list for UI dropdowns
+SCHOOLS_LIST = sorted(set(s["name"] for s in SCHOOL_DATABASE))

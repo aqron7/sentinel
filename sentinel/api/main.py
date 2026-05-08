@@ -17,7 +17,10 @@ from sentinel.career.knowledge import (
     APPLY_NOW,
     CAREER_TIMELINE,
     CLUBS,
+    MAJOR_DOMAINS,
+    MAJORS_LIST,
     RUTGERS_LABS,
+    SCHOOL_DATABASE,
     SCHOLARSHIPS,
     SKILLS_MAP,
 )
@@ -516,6 +519,84 @@ def contractor_detail(
         "patents": patents,
         "solicitations": solicitations,
     }
+
+
+@app.get("/school-planner")
+def school_planner(
+    domains: str = Query("", description="Comma-separated tech keywords to filter by"),
+    school: str = Query("", description="Optional school name filter"),
+) -> dict:
+    """Return schools ranked by relevance to the requested domains + live momentum scores."""
+    momentum = _keyword_momentum_scores()
+    requested = [d.strip() for d in domains.split(",") if d.strip()] if domains else CANONICAL_KEYWORDS
+
+    results = []
+    for s in SCHOOL_DATABASE:
+        overlap = [kw for kw in s["relevant_keywords"] if kw in requested]
+        if not overlap:
+            continue
+        if school and school.lower() not in s["name"].lower() and school.lower() not in s["full_name"].lower():
+            continue
+        score = sum(momentum.get(kw, 0) for kw in overlap) / max(len(requested), 1)
+        results.append({**s, "matched_keywords": overlap, "relevance_score": round(score, 3)})
+
+    results.sort(key=lambda x: -x["relevance_score"])
+    return {
+        "schools": results,
+        "requested_domains": requested,
+        "momentum_scores": {kw: round(momentum.get(kw, 0), 3) for kw in requested},
+    }
+
+
+@app.get("/major-guide")
+def major_guide(major: str = Query(...)) -> dict:
+    """Return domain guidance, skills, and opportunities for a given major."""
+    info = MAJOR_DOMAINS.get(major)
+    if not info:
+        raise HTTPException(status_code=404, detail=f"Unknown major: {major}")
+
+    momentum = _keyword_momentum_scores()
+    keywords = info["keywords"]
+
+    skills = []
+    for kw in sorted(keywords, key=lambda k: -momentum.get(k, 0)):
+        sm = SKILLS_MAP.get(kw)
+        if sm:
+            skills.append({
+                "keyword": kw,
+                "momentum_score": round(momentum.get(kw, 0), 3),
+                "generic_courses": info["generic_courses"],
+                "skills": sm["skills"],
+                "tools": sm["tools"],
+                "why": sm["why"],
+            })
+
+    top_schools = [
+        s for s in SCHOOL_DATABASE
+        if any(kw in s["relevant_keywords"] for kw in keywords)
+    ]
+    top_schools.sort(key=lambda s: -sum(momentum.get(kw, 0) for kw in s["relevant_keywords"] if kw in keywords))
+
+    relevant_scholarships = [
+        sc for sc in SCHOLARSHIPS
+        if any(kw in sc["relevant_keywords"] for kw in keywords)
+    ]
+
+    return {
+        "major": major,
+        "description": info["description"],
+        "keywords": keywords,
+        "skills": skills,
+        "top_schools": top_schools[:8],
+        "scholarships": relevant_scholarships,
+        "career_timeline": CAREER_TIMELINE,
+        "majors_list": MAJORS_LIST,
+    }
+
+
+@app.get("/majors")
+def list_majors() -> dict:
+    return {"majors": MAJORS_LIST}
 
 
 _DIST = Path(__file__).resolve().parents[2] / "dashboard" / "dist"

@@ -150,6 +150,38 @@ export type SearchResults = {
   patents: Patent[];
 };
 
+export type SchoolResult = {
+  name: string;
+  full_name: string;
+  location: string;
+  relevant_keywords: string[];
+  strong_majors: string[];
+  defense_strength: string;
+  why: string;
+  notable_programs: string[];
+  defense_connections: string;
+  url: string;
+  matched_keywords: string[];
+  relevance_score: number;
+};
+
+export type SchoolPlannerResult = {
+  schools: SchoolResult[];
+  requested_domains: string[];
+  momentum_scores: Record<string, number>;
+};
+
+export type MajorGuide = {
+  major: string;
+  description: string;
+  keywords: string[];
+  skills: SkillEntry[];
+  top_schools: SchoolResult[];
+  scholarships: Scholarship[];
+  career_timeline: CareerTimelineItem[];
+  majors_list: string[];
+};
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) {
@@ -173,4 +205,11 @@ export const api = {
     ),
   recommendations: (topN = 5) =>
     get<Recommendations>(`/recommendations?top_n=${topN}`),
+  schoolPlanner: (domains: string[], school = "") =>
+    get<SchoolPlannerResult>(
+      `/school-planner?domains=${encodeURIComponent(domains.join(","))}&school=${encodeURIComponent(school)}`,
+    ),
+  majorGuide: (major: string) =>
+    get<MajorGuide>(`/major-guide?major=${encodeURIComponent(major)}`),
+  majors: () => get<{ majors: string[] }>("/majors"),
 };
