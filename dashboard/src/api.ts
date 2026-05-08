@@ -58,6 +58,28 @@ export type Aggregates = {
   matrix: MatrixCell[][];
 };
 
+export type ContractorSummary = {
+  total_contract_dollars: number;
+  award_count: number;
+  patent_count: number;
+  open_solicitation_count: number;
+  top_keywords: string[];
+};
+
+export type ContractorDetail = {
+  contractor: string;
+  summary: ContractorSummary;
+  awards: Award[];
+  patents: Patent[];
+  solicitations: Solicitation[];
+};
+
+export type SearchResults = {
+  awards: Award[];
+  solicitations: Solicitation[];
+  patents: Patent[];
+};
+
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) {
@@ -73,4 +95,10 @@ export const api = {
   solicitations: (limit = 50) =>
     get<Solicitation[]>(`/solicitations?limit=${limit}`),
   patents: (limit = 200) => get<Patent[]>(`/patents?limit=${limit}`),
+  contractor: (name: string) =>
+    get<ContractorDetail>(`/contractor/${encodeURIComponent(name)}`),
+  search: (q: string, source = "all", limit = 20) =>
+    get<SearchResults>(
+      `/search?q=${encodeURIComponent(q)}&source=${source}&limit=${limit}`,
+    ),
 };

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card } from "./components/Card";
 import { Empty, ErrorState, Loading } from "./components/States";
 import { api } from "./api";
 import { useAsync } from "./hooks";
+import { ContractorDetail } from "./views/ContractorDetail";
 import { Matrix } from "./views/Matrix";
 import { PatentTimeline } from "./views/PatentTimeline";
 import { RecentAwards } from "./views/RecentAwards";
@@ -9,6 +11,12 @@ import { Solicitations } from "./views/Solicitations";
 import { fmtUSDCompact } from "./format";
 
 export default function App() {
+  const [selectedContractor, setSelectedContractor] = useState<string | null>(null);
+  const contractorData = useAsync(
+    () => (selectedContractor ? api.contractor(selectedContractor) : Promise.resolve(null)),
+    [selectedContractor],
+  );
+
   const aggregates = useAsync(() => api.aggregates(), []);
   const awards = useAsync(() => api.awards(50), []);
   const sols = useAsync(() => api.solicitations(30), []);
@@ -44,12 +52,29 @@ export default function App() {
 
       <Card
         title="Contractor x technology"
-        subtitle="Combined momentum across awards, patents, and open solicitations."
+        subtitle="Combined momentum across awards, patents, and open solicitations. Click a contractor name for details."
       >
         {aggregates.status === "loading" && <Loading />}
         {aggregates.status === "error" && <ErrorState error={aggregates.error} />}
-        {aggregates.status === "ready" && <Matrix data={aggregates.data} />}
+        {aggregates.status === "ready" && (
+          <Matrix data={aggregates.data} onContractorClick={setSelectedContractor} />
+        )}
       </Card>
+
+      {selectedContractor && (
+        <Card title={`Contractor deep-dive`} subtitle={selectedContractor}>
+          {contractorData.status === "loading" && <Loading />}
+          {contractorData.status === "error" && (
+            <ErrorState error={contractorData.error} />
+          )}
+          {contractorData.status === "ready" && contractorData.data && (
+            <ContractorDetail
+              data={contractorData.data}
+              onClose={() => setSelectedContractor(null)}
+            />
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card

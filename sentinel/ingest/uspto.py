@@ -11,6 +11,9 @@ DEFAULT_ASSIGNEES = [
     "Raytheon",
     "General Atomics",
     "Lockheed Martin",
+    "Boeing",
+    "L3Harris",
+    "BAE Systems",
 ]
 
 

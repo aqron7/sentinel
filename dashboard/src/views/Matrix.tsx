@@ -28,7 +28,13 @@ function cellTotal(c: MatrixCell, maxes: Record<CellKey, number>): number {
   return Math.min(1, Math.pow((a + b + o) / 3, 0.6));
 }
 
-export function Matrix({ data }: { data: Aggregates }) {
+export function Matrix({
+  data,
+  onContractorClick,
+}: {
+  data: Aggregates;
+  onContractorClick?: (contractor: string) => void;
+}) {
   const { contractors, tech_keywords, matrix } = data;
 
   const maxes: Record<CellKey, number> = {
@@ -61,7 +67,16 @@ export function Matrix({ data }: { data: Aggregates }) {
           {contractors.map((c, i) => (
             <tr key={c} className="group">
               <th className="sticky left-0 z-10 bg-ink-900/60 px-3 py-2 text-left text-sm font-medium text-ink-100">
-                {c}
+                {onContractorClick ? (
+                  <button
+                    onClick={() => onContractorClick(c)}
+                    className="text-left underline-offset-2 hover:text-ember-300 hover:underline transition-colors"
+                  >
+                    {c}
+                  </button>
+                ) : (
+                  c
+                )}
               </th>
               {tech_keywords.map((kw, j) => {
                 const cell = matrix[i][j];

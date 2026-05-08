@@ -2,17 +2,18 @@
 aggregate matrix that powers the dashboard."""
 
 import json
+import sqlite3
 from collections import defaultdict
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from sentinel.db.models import Award, Patent, Solicitation
-from sentinel.db.search import ENGINE
+from sentinel.db.search import DB_PATH, ENGINE
 from sentinel.extract.prompts import TECH_KEYWORDS
 
 CONTRACTOR_GROUPS = {
@@ -20,6 +21,9 @@ CONTRACTOR_GROUPS = {
     "Raytheon": ["RAYTHEON", "RTX"],
     "General Atomics": ["GENERAL ATOMICS"],
     "Lockheed Martin": ["LOCKHEED MARTIN"],
+    "Boeing": ["BOEING"],
+    "L3Harris": ["L3HARRIS", "L3 HARRIS"],
+    "BAE Systems": ["BAE SYSTEMS"],
 }
 
 CANONICAL_KEYWORDS = [k.strip() for k in TECH_KEYWORDS.split(",")]
@@ -219,6 +223,128 @@ def aggregates() -> dict:
         "contractors": contractors,
         "tech_keywords": CANONICAL_KEYWORDS,
         "matrix": matrix,
+    }
+
+
+@app.get("/search")
+def search(
+    q: str = Query(..., min_length=1),
+    source: str = Query("all"),
+    limit: int = Query(20, le=100),
+) -> dict:
+    """Full-text search across awards, solicitations, and patents via FTS5."""
+    results: dict[str, list[dict]] = {"awards": [], "solicitations": [], "patents": []}
+    safe_q = q.replace('"', "")  # strip quotes to avoid FTS5 syntax injection
+
+    with sqlite3.connect(str(DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+
+        if source in ("all", "awards"):
+            rows = conn.execute(
+                "SELECT a.* FROM award a "
+                "JOIN award_fts f ON a.id = f.rowid "
+                "WHERE award_fts MATCH ? ORDER BY rank LIMIT ?",
+                (safe_q, limit),
+            ).fetchall()
+            with Session(ENGINE) as session:
+                for row in rows:
+                    a = session.get(Award, row["id"])
+                    if a:
+                        results["awards"].append(_serialize_award(a))
+
+        if source in ("all", "solicitations"):
+            rows = conn.execute(
+                "SELECT s.* FROM solicitation s "
+                "JOIN solicitation_fts f ON s.id = f.rowid "
+                "WHERE solicitation_fts MATCH ? ORDER BY rank LIMIT ?",
+                (safe_q, limit),
+            ).fetchall()
+            with Session(ENGINE) as session:
+                for row in rows:
+                    s = session.get(Solicitation, row["id"])
+                    if s:
+                        results["solicitations"].append(_serialize_solicitation(s))
+
+        if source in ("all", "patents"):
+            rows = conn.execute(
+                "SELECT p.* FROM patent p "
+                "JOIN patent_fts f ON p.id = f.rowid "
+                "WHERE patent_fts MATCH ? ORDER BY rank LIMIT ?",
+                (safe_q, limit),
+            ).fetchall()
+            with Session(ENGINE) as session:
+                for row in rows:
+                    p = session.get(Patent, row["id"])
+                    if p:
+                        results["patents"].append(_serialize_patent(p))
+
+    return results
+
+
+@app.get("/contractor/{name}")
+def contractor_detail(
+    name: str,
+    awards_limit: int = Query(50, le=500),
+    patents_limit: int = Query(100, le=500),
+    sols_limit: int = Query(50, le=500),
+) -> dict:
+    """All data for a single canonical contractor."""
+    if name not in CONTRACTOR_GROUPS:
+        raise HTTPException(status_code=404, detail=f"Unknown contractor: {name}")
+
+    with Session(ENGINE) as session:
+        all_awards = session.exec(
+            select(Award).order_by(Award.amount.desc()).limit(awards_limit * 10)
+        ).all()
+        all_patents = session.exec(
+            select(Patent).order_by(Patent.grant_date.desc()).limit(patents_limit * 10)
+        ).all()
+        all_sols = session.exec(
+            select(Solicitation)
+            .where(Solicitation.status == "open_solicitation")
+            .order_by(Solicitation.posted_date.desc())
+            .limit(sols_limit * 10)
+        ).all()
+
+    awards = [
+        _serialize_award(a)
+        for a in all_awards
+        if _canonical_contractor(a.recipient) == name
+    ][:awards_limit]
+
+    patents = [
+        _serialize_patent(p)
+        for p in all_patents
+        if _canonical_contractor(p.assignee) == name
+    ][:patents_limit]
+
+    solicitations = [
+        _serialize_solicitation(s)
+        for s in all_sols
+        if _canonical_contractor((s.title or "") + " " + (s.agency or "")) == name
+    ][:sols_limit]
+
+    total_contract_dollars = sum(a["amount"] for a in awards)
+    kw_counts: dict[str, int] = defaultdict(int)
+    for a in awards:
+        for kw in a["tech_keywords"]:
+            kw_counts[kw] += 1
+    for p in patents:
+        for kw in p["tech_keywords"]:
+            kw_counts[kw] += 1
+
+    return {
+        "contractor": name,
+        "summary": {
+            "total_contract_dollars": total_contract_dollars,
+            "award_count": len(awards),
+            "patent_count": len(patents),
+            "open_solicitation_count": len(solicitations),
+            "top_keywords": sorted(kw_counts, key=lambda k: -kw_counts[k])[:5],
+        },
+        "awards": awards,
+        "patents": patents,
+        "solicitations": solicitations,
     }
 
 
