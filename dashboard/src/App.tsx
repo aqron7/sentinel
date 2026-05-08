@@ -1,19 +1,66 @@
+import { useEffect, useMemo, useState } from "react";
+import { Award } from "./api";
 import { Card } from "./components/Card";
 import { Empty, ErrorState, Loading } from "./components/States";
 import { api } from "./api";
 import { useAsync } from "./hooks";
+import { CareerGuide } from "./views/CareerGuide";
+import { ContractorDetail } from "./views/ContractorDetail";
+import { InternshipTimeline } from "./views/InternshipTimeline";
 import { Matrix } from "./views/Matrix";
+import { MyProfile } from "./views/MyProfile";
 import { PatentTimeline } from "./views/PatentTimeline";
 import { RecentAwards } from "./views/RecentAwards";
+import { SchoolPlanner } from "./views/SchoolPlanner";
 import { Solicitations } from "./views/Solicitations";
 import { fmtUSDCompact } from "./format";
 
+const LS_WATCHLIST = "sentinel_watchlist";
+
+function loadWatchlist(): Set<string> {
+  try {
+    const raw = localStorage.getItem(LS_WATCHLIST);
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
 export default function App() {
+  const [selectedContractor, setSelectedContractor] = useState<string | null>(null);
+  const [watchlist, setWatchlist] = useState<Set<string>>(loadWatchlist);
+
+  const contractorData = useAsync(
+    () => (selectedContractor ? api.contractor(selectedContractor) : Promise.resolve(null)),
+    [selectedContractor],
+  );
+
   const aggregates = useAsync(() => api.aggregates(), []);
-  const awards = useAsync(() => api.awards(50), []);
+  const awards = useAsync(() => api.awards(200), []);
   const sols = useAsync(() => api.solicitations(30), []);
   const patents = useAsync(() => api.patents(300), []);
   const health = useAsync(() => api.health(), []);
+  const recommendations = useAsync(() => api.recommendations(6), []);
+
+  useEffect(() => {
+    localStorage.setItem(LS_WATCHLIST, JSON.stringify([...watchlist]));
+  }, [watchlist]);
+
+  const toggleWatchlist = (contractor: string) => {
+    setWatchlist((prev) => {
+      const next = new Set(prev);
+      if (next.has(contractor)) next.delete(contractor);
+      else next.add(contractor);
+      return next;
+    });
+  };
+
+  const watchlistAwards = useMemo<Award[]>(() => {
+    if (awards.status !== "ready" || watchlist.size === 0) return [];
+    return awards.data
+      .filter((a) => a.contractor && watchlist.has(a.contractor))
+      .slice(0, 20);
+  }, [awards, watchlist]);
 
   const totalContractDollars =
     aggregates.status === "ready"
@@ -44,12 +91,34 @@ export default function App() {
 
       <Card
         title="Contractor x technology"
-        subtitle="Combined momentum across awards, patents, and open solicitations."
+        subtitle="Combined momentum across awards, patents, and open solicitations. Click a contractor name for details."
       >
         {aggregates.status === "loading" && <Loading />}
         {aggregates.status === "error" && <ErrorState error={aggregates.error} />}
-        {aggregates.status === "ready" && <Matrix data={aggregates.data} />}
+        {aggregates.status === "ready" && (
+          <Matrix
+            data={aggregates.data}
+            onContractorClick={setSelectedContractor}
+            watchlist={watchlist}
+            onWatchlistToggle={toggleWatchlist}
+          />
+        )}
       </Card>
+
+      {selectedContractor && (
+        <Card title={`Contractor deep-dive`} subtitle={selectedContractor}>
+          {contractorData.status === "loading" && <Loading />}
+          {contractorData.status === "error" && (
+            <ErrorState error={contractorData.error} />
+          )}
+          {contractorData.status === "ready" && contractorData.data && (
+            <ContractorDetail
+              data={contractorData.data}
+              onClose={() => setSelectedContractor(null)}
+            />
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card
@@ -89,6 +158,72 @@ export default function App() {
         {patents.status === "loading" && <Loading />}
         {patents.status === "error" && <ErrorState error={patents.error} />}
         {patents.status === "ready" && <PatentTimeline patents={patents.data} />}
+      </Card>
+
+      <Card
+        title="Career guide — Rutgers AAE"
+        subtitle="Recommendations driven by live contract momentum. What to study, where to apply, and which labs to join."
+      >
+        {recommendations.status === "loading" && <Loading />}
+        {recommendations.status === "error" && (
+          <ErrorState error={recommendations.error} />
+        )}
+        {recommendations.status === "ready" && (
+          <CareerGuide data={recommendations.data} />
+        )}
+      </Card>
+
+      <Card
+        title="School & major planner"
+        subtitle="Find schools aligned with contract momentum, explore your major's defense value, and locate clubs at any school."
+      >
+        {recommendations.status === "loading" && <Loading />}
+        {recommendations.status === "error" && (
+          <ErrorState error={recommendations.error} />
+        )}
+        {recommendations.status === "ready" && (
+          <SchoolPlanner
+            topKeywords={recommendations.data.top_keywords}
+            momentumScores={{}}
+          />
+        )}
+      </Card>
+
+      {watchlist.size > 0 && (
+        <Card
+          title="Watchlist"
+          subtitle={`Recent awards from ${[...watchlist].join(", ")} — click ★ on the matrix to pin contractors`}
+        >
+          {watchlistAwards.length === 0 ? (
+            <Empty>No awards yet for your watchlist contractors.</Empty>
+          ) : (
+            <RecentAwards awards={watchlistAwards} />
+          )}
+        </Card>
+      )}
+
+      <Card
+        title="Internship & scholarship calendar"
+        subtitle="Deadlines sorted from now — highlighted items match your top funded domains."
+      >
+        {recommendations.status === "ready" ? (
+          <InternshipTimeline topKeywords={recommendations.data.top_keywords} />
+        ) : (
+          <InternshipTimeline topKeywords={[]} />
+        )}
+      </Card>
+
+      <Card
+        title="My profile"
+        subtitle="Track your courses and find gaps in your resume vs. what contractors are funding."
+      >
+        {recommendations.status === "loading" && <Loading />}
+        {recommendations.status === "error" && (
+          <ErrorState error={recommendations.error} />
+        )}
+        {recommendations.status === "ready" && (
+          <MyProfile skillsMap={recommendations.data.skills_map} />
+        )}
       </Card>
 
       <footer className="pb-4 text-center text-[11px] text-ink-600">

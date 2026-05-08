@@ -7,7 +7,7 @@ import httpx
 
 BASE = "https://api.sam.gov/opportunities/v2/search"
 
-TARGET_KEYWORDS = "Northrop Grumman Raytheon General Atomics Lockheed Martin"
+TARGET_KEYWORDS = "Northrop Grumman Raytheon General Atomics Lockheed Martin Boeing L3Harris BAE Systems"
 
 
 async def fetch_open_solicitations(days_back: int = 30) -> list[dict]:

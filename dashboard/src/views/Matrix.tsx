@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Aggregates, MatrixCell } from "../api";
+import { Aggregates, MatrixCell, TrendCell } from "../api";
 import { fmtUSDCompact } from "../format";
 
 type CellKey = "contract_amount" | "patent_count" | "open_solicitations";
@@ -28,7 +28,17 @@ function cellTotal(c: MatrixCell, maxes: Record<CellKey, number>): number {
   return Math.min(1, Math.pow((a + b + o) / 3, 0.6));
 }
 
-export function Matrix({ data }: { data: Aggregates }) {
+export function Matrix({
+  data,
+  onContractorClick,
+  watchlist,
+  onWatchlistToggle,
+}: {
+  data: Aggregates;
+  onContractorClick?: (contractor: string) => void;
+  watchlist?: Set<string>;
+  onWatchlistToggle?: (contractor: string) => void;
+}) {
   const { contractors, tech_keywords, matrix } = data;
 
   const maxes: Record<CellKey, number> = {
@@ -61,22 +71,57 @@ export function Matrix({ data }: { data: Aggregates }) {
           {contractors.map((c, i) => (
             <tr key={c} className="group">
               <th className="sticky left-0 z-10 bg-ink-900/60 px-3 py-2 text-left text-sm font-medium text-ink-100">
-                {c}
+                <div className="flex items-center gap-1.5">
+                  {onWatchlistToggle && (
+                    <button
+                      onClick={() => onWatchlistToggle(c)}
+                      title={watchlist?.has(c) ? "Remove from watchlist" : "Add to watchlist"}
+                      className={
+                        "text-base leading-none transition-colors " +
+                        (watchlist?.has(c)
+                          ? "text-ember-400"
+                          : "text-ink-700 hover:text-ink-400")
+                      }
+                    >
+                      {watchlist?.has(c) ? "★" : "☆"}
+                    </button>
+                  )}
+                  {onContractorClick ? (
+                    <button
+                      onClick={() => onContractorClick(c)}
+                      className="text-left underline-offset-2 hover:text-ember-300 hover:underline transition-colors"
+                    >
+                      {c}
+                    </button>
+                  ) : (
+                    c
+                  )}
+                </div>
               </th>
               {tech_keywords.map((kw, j) => {
                 const cell = matrix[i][j];
+                const trendCell: TrendCell | undefined = data.trend?.[i]?.[j];
                 const t = cellTotal(cell, maxes);
                 const has =
                   cell.contract_amount > 0 ||
                   cell.patent_count > 0 ||
                   cell.open_solicitations > 0;
-                const tip = `${c} - ${kw}\nContracts: ${fmtUSDCompact(cell.contract_amount)}\nPatents: ${cell.patent_count}\nOpen RFPs: ${cell.open_solicitations}`;
+                const delta = trendCell?.contract_amount_delta ?? 0;
+                const trendArrow =
+                  delta > 0.1 ? "▲" : delta < -0.1 ? "▼" : null;
+                const trendColor =
+                  delta > 0.1
+                    ? "text-emerald-400"
+                    : delta < -0.1
+                      ? "text-rose-400"
+                      : "";
+                const tip = `${c} - ${kw}\nContracts: ${fmtUSDCompact(cell.contract_amount)}\nPatents: ${cell.patent_count}\nOpen RFPs: ${cell.open_solicitations}\n30-day trend: ${delta > 0 ? "+" : ""}${(delta * 100).toFixed(0)}%`;
                 return (
                   <td key={kw} className="p-1 align-middle">
                     <div
                       title={tip}
                       className={clsx(
-                        "relative flex h-12 min-w-[44px] items-center justify-center rounded-md border text-[10px] font-mono transition-transform",
+                        "relative flex h-12 min-w-[44px] flex-col items-center justify-center rounded-md border text-[10px] font-mono transition-transform",
                         has
                           ? "border-ember-500/30 text-ember-100 hover:scale-[1.04]"
                           : "border-ink-800 text-ink-600",
@@ -91,6 +136,11 @@ export function Matrix({ data }: { data: Aggregates }) {
                       }}
                     >
                       {has ? fmtUSDCompact(cell.contract_amount) : "-"}
+                      {trendArrow && has && (
+                        <span className={`text-[9px] leading-none ${trendColor}`}>
+                          {trendArrow}
+                        </span>
+                      )}
                     </div>
                   </td>
                 );

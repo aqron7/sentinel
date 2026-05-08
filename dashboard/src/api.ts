@@ -52,10 +52,134 @@ export type MatrixCell = {
   open_solicitations: number;
 };
 
+export type TrendCell = {
+  contract_amount_delta: number;
+  patent_count_delta: number;
+};
+
 export type Aggregates = {
   contractors: string[];
   tech_keywords: string[];
   matrix: MatrixCell[][];
+  trend: TrendCell[][];
+};
+
+export type SkillEntry = {
+  keyword: string;
+  momentum_score: number;
+  courses: string[];
+  skills: string[];
+  tools: string[];
+  why: string;
+};
+
+export type Club = {
+  name: string;
+  description: string;
+  relevant_keywords: string[];
+  how_to_join: string;
+};
+
+export type Scholarship = {
+  name: string;
+  sponsor: string;
+  amount: string;
+  deadline_note: string;
+  url: string;
+  relevant_keywords: string[];
+};
+
+export type RutgersLab = {
+  name: string;
+  department: string;
+  faculty: string;
+  relevant_keywords: string[];
+  description: string;
+  why_apply: string;
+  url: string;
+  how_to_apply: string;
+};
+
+export type ApplyNowItem = {
+  what: string;
+  type: string;
+  urgency: string;
+  effort: string;
+  payoff: string;
+  link: string;
+  relevant_keywords: string[];
+};
+
+export type CareerTimelineItem = {
+  year: string;
+  action: string;
+  rationale: string;
+  relevant_keywords: string[];
+};
+
+export type Recommendations = {
+  top_keywords: string[];
+  skills_map: SkillEntry[];
+  clubs: Club[];
+  scholarships: Scholarship[];
+  rutgers_labs: RutgersLab[];
+  apply_now: ApplyNowItem[];
+  career_timeline: CareerTimelineItem[];
+  top_contractors_by_keyword: Record<string, string[]>;
+};
+
+export type ContractorSummary = {
+  total_contract_dollars: number;
+  award_count: number;
+  patent_count: number;
+  open_solicitation_count: number;
+  top_keywords: string[];
+};
+
+export type ContractorDetail = {
+  contractor: string;
+  summary: ContractorSummary;
+  awards: Award[];
+  patents: Patent[];
+  solicitations: Solicitation[];
+};
+
+export type SearchResults = {
+  awards: Award[];
+  solicitations: Solicitation[];
+  patents: Patent[];
+};
+
+export type SchoolResult = {
+  name: string;
+  full_name: string;
+  location: string;
+  relevant_keywords: string[];
+  strong_majors: string[];
+  defense_strength: string;
+  why: string;
+  notable_programs: string[];
+  defense_connections: string;
+  url: string;
+  matched_keywords: string[];
+  relevance_score: number;
+};
+
+export type SchoolPlannerResult = {
+  schools: SchoolResult[];
+  requested_domains: string[];
+  momentum_scores: Record<string, number>;
+};
+
+export type MajorGuide = {
+  major: string;
+  description: string;
+  keywords: string[];
+  skills: SkillEntry[];
+  top_schools: SchoolResult[];
+  scholarships: Scholarship[];
+  career_timeline: CareerTimelineItem[];
+  majors_list: string[];
 };
 
 async function get<T>(path: string): Promise<T> {
@@ -73,4 +197,19 @@ export const api = {
   solicitations: (limit = 50) =>
     get<Solicitation[]>(`/solicitations?limit=${limit}`),
   patents: (limit = 200) => get<Patent[]>(`/patents?limit=${limit}`),
+  contractor: (name: string) =>
+    get<ContractorDetail>(`/contractor/${encodeURIComponent(name)}`),
+  search: (q: string, source = "all", limit = 20) =>
+    get<SearchResults>(
+      `/search?q=${encodeURIComponent(q)}&source=${source}&limit=${limit}`,
+    ),
+  recommendations: (topN = 5) =>
+    get<Recommendations>(`/recommendations?top_n=${topN}`),
+  schoolPlanner: (domains: string[], school = "") =>
+    get<SchoolPlannerResult>(
+      `/school-planner?domains=${encodeURIComponent(domains.join(","))}&school=${encodeURIComponent(school)}`,
+    ),
+  majorGuide: (major: string) =>
+    get<MajorGuide>(`/major-guide?major=${encodeURIComponent(major)}`),
+  majors: () => get<{ majors: string[] }>("/majors"),
 };
