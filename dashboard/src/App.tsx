@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Award } from "./api";
+import { AsyncState } from "./hooks";
+import { Aggregates, Award, ContractorDetail as ContractorDetailType, Recommendations, Solicitation, Patent } from "./api";
 import { Card } from "./components/Card";
 import { Empty, ErrorState, Loading } from "./components/States";
 import { api } from "./api";
@@ -16,6 +17,9 @@ import { Solicitations } from "./views/Solicitations";
 import { fmtUSDCompact } from "./format";
 
 const LS_WATCHLIST = "sentinel_watchlist";
+const LS_PAGE = "sentinel_page";
+
+type Page = "home" | "intel";
 
 function loadWatchlist(): Set<string> {
   try {
@@ -27,6 +31,9 @@ function loadWatchlist(): Set<string> {
 }
 
 export default function App() {
+  const [page, setPage] = useState<Page>(
+    () => (localStorage.getItem(LS_PAGE) as Page | null) ?? "home",
+  );
   const [selectedContractor, setSelectedContractor] = useState<string | null>(null);
   const [watchlist, setWatchlist] = useState<Set<string>>(loadWatchlist);
 
@@ -45,6 +52,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(LS_WATCHLIST, JSON.stringify([...watchlist]));
   }, [watchlist]);
+
+  useEffect(() => {
+    localStorage.setItem(LS_PAGE, page);
+  }, [page]);
 
   const toggleWatchlist = (contractor: string) => {
     setWatchlist((prev) => {
@@ -79,10 +90,105 @@ export default function App() {
           .reduce((acc, c) => acc + c.open_solicitations, 0)
       : 0;
 
+  const topKeywords =
+    recommendations.status === "ready" ? recommendations.data.top_keywords : [];
+
   return (
     <div className="mx-auto flex min-h-full max-w-[1400px] flex-col gap-6 px-6 py-8">
-      <Header healthOk={health.status === "ready" && health.data.ok} />
+      <Header
+        healthOk={health.status === "ready" && health.data.ok}
+        page={page}
+        onPageChange={setPage}
+      />
 
+      {page === "home" && (
+        <HomeDashboard topKeywords={topKeywords} />
+      )}
+
+      {page === "intel" && (
+        <IntelDashboard
+          aggregates={aggregates}
+          awards={awards}
+          sols={sols}
+          patents={patents}
+          recommendations={recommendations}
+          contractorData={contractorData}
+          selectedContractor={selectedContractor}
+          setSelectedContractor={setSelectedContractor}
+          watchlist={watchlist}
+          toggleWatchlist={toggleWatchlist}
+          watchlistAwards={watchlistAwards}
+          totalContractDollars={totalContractDollars}
+          totalPatents={totalPatents}
+          totalOpenSols={totalOpenSols}
+          topKeywords={topKeywords}
+        />
+      )}
+
+      <footer className="pb-4 text-center text-[11px] text-ink-600">
+        Sentinel · data: USASpending, SAM.gov, PatentsView
+      </footer>
+    </div>
+  );
+}
+
+function HomeDashboard({ topKeywords }: { topKeywords: string[] }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h2 className="text-xl font-semibold text-ink-100">School & Major Planner</h2>
+        <p className="mt-1 text-sm text-ink-400">
+          Find schools, explore any major, and discover clubs and opportunities — for every student at every school.
+        </p>
+      </div>
+
+      <SchoolPlanner topKeywords={topKeywords} momentumScores={{}} />
+
+      <Card
+        title="Internship & scholarship calendar"
+        subtitle="Deadlines sorted from now — highlighted items match top funded defense domains."
+      >
+        <InternshipTimeline topKeywords={topKeywords} />
+      </Card>
+    </div>
+  );
+}
+
+function IntelDashboard({
+  aggregates,
+  awards,
+  sols,
+  patents,
+  recommendations,
+  contractorData,
+  selectedContractor,
+  setSelectedContractor,
+  watchlist,
+  toggleWatchlist,
+  watchlistAwards,
+  totalContractDollars,
+  totalPatents,
+  totalOpenSols,
+  topKeywords,
+}: {
+  aggregates: AsyncState<Aggregates>;
+  awards: AsyncState<Award[]>;
+  sols: AsyncState<Solicitation[]>;
+  patents: AsyncState<Patent[]>;
+  recommendations: AsyncState<Recommendations>;
+  contractorData: AsyncState<ContractorDetailType | null>;
+  selectedContractor: string | null;
+  setSelectedContractor: (v: string | null) => void;
+  watchlist: Set<string>;
+  toggleWatchlist: (c: string) => void;
+  watchlistAwards: Award[];
+  totalContractDollars: number;
+  totalPatents: number;
+  totalOpenSols: number;
+  topKeywords: string[];
+}) {
+  return (
+    <div className="flex flex-col gap-6">
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Contract dollars (tracked)" value={fmtUSDCompact(totalContractDollars)} />
         <Stat label="Patents indexed" value={String(totalPatents)} />
@@ -106,7 +212,7 @@ export default function App() {
       </Card>
 
       {selectedContractor && (
-        <Card title={`Contractor deep-dive`} subtitle={selectedContractor}>
+        <Card title="Contractor deep-dive" subtitle={selectedContractor}>
           {contractorData.status === "loading" && <Loading />}
           {contractorData.status === "error" && (
             <ErrorState error={contractorData.error} />
@@ -136,10 +242,7 @@ export default function App() {
             ))}
         </Card>
 
-        <Card
-          title="Open solicitations"
-          subtitle="Active SAM.gov opportunities."
-        >
+        <Card title="Open solicitations" subtitle="Active SAM.gov opportunities.">
           {sols.status === "loading" && <Loading />}
           {sols.status === "error" && <ErrorState error={sols.error} />}
           {sols.status === "ready" &&
@@ -161,7 +264,7 @@ export default function App() {
       </Card>
 
       <Card
-        title="Career guide — Rutgers AAE"
+        title="Career guide — defense tech"
         subtitle="Recommendations driven by live contract momentum. What to study, where to apply, and which labs to join."
       >
         {recommendations.status === "loading" && <Loading />}
@@ -170,22 +273,6 @@ export default function App() {
         )}
         {recommendations.status === "ready" && (
           <CareerGuide data={recommendations.data} />
-        )}
-      </Card>
-
-      <Card
-        title="School & major planner"
-        subtitle="Find schools aligned with contract momentum, explore your major's defense value, and locate clubs at any school."
-      >
-        {recommendations.status === "loading" && <Loading />}
-        {recommendations.status === "error" && (
-          <ErrorState error={recommendations.error} />
-        )}
-        {recommendations.status === "ready" && (
-          <SchoolPlanner
-            topKeywords={recommendations.data.top_keywords}
-            momentumScores={{}}
-          />
         )}
       </Card>
 
@@ -203,17 +290,6 @@ export default function App() {
       )}
 
       <Card
-        title="Internship & scholarship calendar"
-        subtitle="Deadlines sorted from now — highlighted items match your top funded domains."
-      >
-        {recommendations.status === "ready" ? (
-          <InternshipTimeline topKeywords={recommendations.data.top_keywords} />
-        ) : (
-          <InternshipTimeline topKeywords={[]} />
-        )}
-      </Card>
-
-      <Card
         title="My profile"
         subtitle="Track your courses and find gaps in your resume vs. what contractors are funding."
       >
@@ -225,17 +301,21 @@ export default function App() {
           <MyProfile skillsMap={recommendations.data.skills_map} />
         )}
       </Card>
-
-      <footer className="pb-4 text-center text-[11px] text-ink-600">
-        Sentinel - defense acquisition intelligence - data: USASpending, SAM.gov, PatentsView
-      </footer>
     </div>
   );
 }
 
-function Header({ healthOk }: { healthOk: boolean }) {
+function Header({
+  healthOk,
+  page,
+  onPageChange,
+}: {
+  healthOk: boolean;
+  page: Page;
+  onPageChange: (p: Page) => void;
+}) {
   return (
-    <header className="flex items-center justify-between gap-4 border-b border-ink-800 pb-5">
+    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-ink-800 pb-5">
       <div className="flex items-center gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ember-500/10 ring-1 ring-ember-500/30">
           <svg
@@ -251,11 +331,36 @@ function Header({ healthOk }: { healthOk: boolean }) {
         </div>
         <div>
           <h1 className="text-lg font-semibold tracking-tight">Sentinel</h1>
-          <p className="text-xs text-ink-500">
-            Defense acquisition intelligence
-          </p>
+          <p className="text-xs text-ink-500">College & career planning · defense intelligence</p>
         </div>
       </div>
+
+      {/* Page nav */}
+      <nav className="flex rounded-lg border border-ink-800 bg-ink-900/60 p-1">
+        <button
+          onClick={() => onPageChange("home")}
+          className={
+            "rounded-md px-4 py-1.5 text-xs font-medium transition-colors " +
+            (page === "home"
+              ? "bg-ember-500/20 text-ember-300"
+              : "text-ink-400 hover:text-ink-200")
+          }
+        >
+          Home
+        </button>
+        <button
+          onClick={() => onPageChange("intel")}
+          className={
+            "rounded-md px-4 py-1.5 text-xs font-medium transition-colors " +
+            (page === "intel"
+              ? "bg-ember-500/20 text-ember-300"
+              : "text-ink-400 hover:text-ink-200")
+          }
+        >
+          Defense Intel
+        </button>
+      </nav>
+
       <div className="flex items-center gap-2 text-xs">
         <span
           className={
@@ -274,9 +379,7 @@ function Header({ healthOk }: { healthOk: boolean }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-ink-800 bg-ink-900/60 px-5 py-4">
-      <div className="text-[11px] uppercase tracking-wider text-ink-500">
-        {label}
-      </div>
+      <div className="text-[11px] uppercase tracking-wider text-ink-500">{label}</div>
       <div className="mt-1 font-mono text-2xl text-ink-100">{value}</div>
     </div>
   );

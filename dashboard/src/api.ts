@@ -68,6 +68,7 @@ export type SkillEntry = {
   keyword: string;
   momentum_score: number;
   courses: string[];
+  generic_courses?: string[];
   skills: string[];
   tools: string[];
   why: string;
