@@ -734,6 +734,173 @@ MAJOR_DOMAINS: dict[str, dict] = {
         "description": "Dedicated cyber programs are still rare — graduates are in very high demand across all DoD branches and intelligence agencies.",
         "generic_courses": ["Network Security", "Penetration Testing", "Reverse Engineering", "Cryptography", "Malware Analysis", "Incident Response"],
     },
+
+    # ── Sciences ──────────────────────────────────────────────────────────────
+    "Biology": {
+        "keywords": ["nuclear", "AI/ML"],
+        "description": "Biology opens paths in biodefense, CBRN (chemical/biological/radiological/nuclear), and bioinformatics. Defense agencies like DARPA and DTRA fund biological threat research heavily.",
+        "generic_courses": ["Cell Biology", "Genetics", "Biochemistry", "Microbiology", "Physiology", "Bioinformatics", "Statistics for Biology"],
+    },
+    "Biochemistry": {
+        "keywords": ["nuclear", "directed energy", "propulsion"],
+        "description": "Energetic materials, propellant chemistry, and biodefense all draw on biochemistry. Aerojet Rocketdyne, Los Alamos, and DTRA hire biochemists.",
+        "generic_courses": ["Organic Chemistry", "Physical Chemistry", "Biochemistry I & II", "Analytical Chemistry", "Molecular Biology", "Lab Techniques"],
+    },
+    "Chemistry": {
+        "keywords": ["nuclear", "propulsion", "directed energy"],
+        "description": "Energetics research, nuclear materials, and advanced materials science are DoD priorities. National labs (Sandia, Oak Ridge, LLNL) hire heavily from chemistry programs.",
+        "generic_courses": ["General Chemistry", "Organic Chemistry", "Physical Chemistry", "Inorganic Chemistry", "Analytical Chemistry", "Quantum Chemistry"],
+    },
+    "Environmental Science": {
+        "keywords": ["nuclear", "logistics"],
+        "description": "DoD is one of the largest environmental remediation organizations in the US — base cleanup, PFAS, nuclear site management. Also growing role in climate & military infrastructure.",
+        "generic_courses": ["Environmental Chemistry", "Ecology", "GIS & Remote Sensing", "Hydrology", "Environmental Law", "Toxicology"],
+    },
+    "Statistics / Data Science": {
+        "keywords": ["AI/ML", "ISR", "cyber", "C2"],
+        "description": "Data scientists are in extremely high demand across DoD, intelligence agencies, and defense contractors for targeting, logistics optimization, and signals intelligence.",
+        "generic_courses": ["Probability & Statistics", "Machine Learning", "Data Visualization", "Databases", "Statistical Computing (R/Python)", "Bayesian Methods"],
+    },
+
+    # ── Business & Economics ──────────────────────────────────────────────────
+    "Business Administration": {
+        "keywords": ["logistics", "C2"],
+        "description": "Defense acquisition, program management, and supply chain are massive career fields. DoD is the largest procurement organization in the world — it needs business-trained people.",
+        "generic_courses": ["Accounting", "Finance", "Operations Management", "Supply Chain", "Organizational Behavior", "Business Law", "Strategic Management"],
+    },
+    "Finance": {
+        "keywords": ["logistics", "C2"],
+        "description": "Defense budget analysis, cost estimating (CAPE), and financial management are dedicated career fields in DoD. Each military service has a financial management corps.",
+        "generic_courses": ["Financial Accounting", "Corporate Finance", "Investment Analysis", "Cost Accounting", "Econometrics", "Defense Budgeting (elective)"],
+    },
+    "Accounting": {
+        "keywords": ["logistics", "C2"],
+        "description": "Federal accounting and defense financial management are distinct specialties with strong job security and GS pay scales. DCAA (Defense Contract Audit Agency) is a major employer.",
+        "generic_courses": ["Financial Accounting", "Managerial Accounting", "Auditing", "Tax Accounting", "Government Accounting", "Forensic Accounting"],
+    },
+    "Economics": {
+        "keywords": ["logistics", "C2", "AI/ML"],
+        "description": "Defense economists work on cost-benefit analysis for weapons programs, sanctions policy, and resource allocation. RAND Corporation is the premier employer for this path.",
+        "generic_courses": ["Micro/Macroeconomics", "Econometrics", "Game Theory", "Industrial Organization", "Defense Economics (elective)", "Statistics"],
+    },
+    "Supply Chain & Logistics": {
+        "keywords": ["logistics", "autonomy", "C2"],
+        "description": "Military logistics is one of the most complex supply chain problems in the world. Autonomous logistics vehicles and predictive maintenance are major DoD investment areas.",
+        "generic_courses": ["Operations Management", "Supply Chain Management", "Inventory Management", "Transportation & Logistics", "ERP Systems", "Simulation"],
+    },
+    "Marketing": {
+        "keywords": ["communications", "C2"],
+        "description": "Defense contractors need marketers for government business development, proposal writing, and communications. Also relevant for defense-adjacent tech companies.",
+        "generic_courses": ["Marketing Principles", "Digital Marketing", "Market Research", "Consumer Behavior", "Brand Management", "Communications Strategy"],
+    },
+
+    # ── Social Sciences ───────────────────────────────────────────────────────
+    "Political Science": {
+        "keywords": ["C2", "JADC2", "ISR", "cyber"],
+        "description": "National security policy, arms control, intelligence analysis, and legislative work on defense budgets all start here. The intelligence community and State Dept recruit heavily from PolSci.",
+        "generic_courses": ["International Relations", "American Government", "Comparative Politics", "National Security Policy", "Research Methods", "International Law"],
+    },
+    "International Relations": {
+        "keywords": ["C2", "JADC2", "ISR", "communications"],
+        "description": "Foreign Area Officers (FAOs), State Dept, DIA, and defense think tanks draw from IR programs. Language skills + IR is an extremely valuable combo for intel careers.",
+        "generic_courses": ["IR Theory", "Foreign Policy Analysis", "Regional Studies", "International Security", "Diplomacy & Negotiation", "Political Economy"],
+    },
+    "Psychology": {
+        "keywords": ["autonomy", "AI/ML"],
+        "description": "Human factors engineering, human-machine teaming, and psychological operations (PSYOP) are growing fields. DARPA funds research on human-machine interface and cognitive performance.",
+        "generic_courses": ["Cognitive Psychology", "Research Methods", "Behavioral Neuroscience", "Human Factors / Ergonomics", "Statistics", "Organizational Psychology"],
+    },
+    "Public Policy": {
+        "keywords": ["C2", "JADC2", "logistics", "cyber"],
+        "description": "Defense acquisition policy, cybersecurity policy, and budget process are government careers that require policy training. The Defense Acquisition University (DAU) trains program managers.",
+        "generic_courses": ["Policy Analysis", "Program Evaluation", "Budgeting & Finance", "Regulation & Law", "Quantitative Methods", "Organizational Theory"],
+    },
+    "Sociology": {
+        "keywords": ["C2", "logistics"],
+        "description": "Military sociology, organizational behavior in defense contexts, and social science research for DoD programs. RAND and CNA (Center for Naval Analyses) hire sociologists.",
+        "generic_courses": ["Social Theory", "Research Methods", "Organizational Sociology", "Demography", "Statistics", "Military & Society (elective)"],
+    },
+    "Criminal Justice": {
+        "keywords": ["cyber", "C2"],
+        "description": "Cybercrime investigation, counterterrorism, and homeland security all connect to criminal justice. DHS, FBI, and military law enforcement are major employers.",
+        "generic_courses": ["Criminal Law", "Criminology", "Criminal Investigation", "Cybercrime", "Counterterrorism", "Forensic Science"],
+    },
+
+    # ── Health Sciences ───────────────────────────────────────────────────────
+    "Pre-Medicine / Biology": {
+        "keywords": ["nuclear", "logistics"],
+        "description": "Military medicine, flight surgery, and combat casualty care are distinct careers. Uniformed Services University (USUHS) is a free medical school that commissions officers as docs.",
+        "generic_courses": ["General Biology", "Chemistry", "Physics", "Biochemistry", "Statistics", "Anatomy & Physiology"],
+    },
+    "Nursing": {
+        "keywords": ["logistics"],
+        "description": "Military nursing offers loan repayment, immediate leadership responsibility, and global deployment experience. All branches commission nurses as officers.",
+        "generic_courses": ["Anatomy & Physiology", "Pharmacology", "Pathophysiology", "Nursing Research", "Clinical Rotations", "Community Health"],
+    },
+    "Public Health": {
+        "keywords": ["nuclear", "logistics"],
+        "description": "Biological threat preparedness, CBRN response, and military preventive medicine are DoD missions. Walter Reed Army Institute of Research is a premier employer.",
+        "generic_courses": ["Epidemiology", "Biostatistics", "Environmental Health", "Global Health", "Health Policy", "Infectious Disease"],
+    },
+    "Kinesiology / Exercise Science": {
+        "keywords": ["autonomy", "logistics"],
+        "description": "Human performance optimization, exoskeleton research, and injury prevention are active DoD programs. SOCOM invests in human performance for special operations.",
+        "generic_courses": ["Exercise Physiology", "Biomechanics", "Anatomy", "Nutrition Science", "Motor Control", "Strength & Conditioning"],
+    },
+
+    # ── Humanities & Communications ───────────────────────────────────────────
+    "History": {
+        "keywords": ["C2", "ISR"],
+        "description": "Military history, strategic studies, and intelligence analysis draw on historical training. CIA, DIA, and defense think tanks hire historians for all-source analysis roles.",
+        "generic_courses": ["Research Methods", "Military History", "Cold War History", "Historiography", "International History", "Archival Research"],
+    },
+    "Communications": {
+        "keywords": ["communications", "C2", "cyber"],
+        "description": "Public affairs officers, information operations, and strategic communications are distinct military and DoD civilian careers. Every branch of service has a public affairs corps.",
+        "generic_courses": ["Mass Communication", "Media Writing", "Strategic Communication", "Digital Media", "Public Relations", "Crisis Communication"],
+    },
+    "Journalism": {
+        "keywords": ["communications", "C2"],
+        "description": "Military public affairs, Stars and Stripes, and defense industry communications all need journalists. Embedded reporting and defense policy journalism are niche but stable fields.",
+        "generic_courses": ["Reporting & Writing", "Multimedia Journalism", "Media Ethics", "Investigative Reporting", "Data Journalism", "International Reporting"],
+    },
+    "English / Writing": {
+        "keywords": ["C2", "communications"],
+        "description": "Technical writing, proposal writing for government contracts, and intelligence report writing all require strong writing skills. Cleared technical writers are in high demand.",
+        "generic_courses": ["Expository Writing", "Technical Writing", "Rhetoric", "Grammar & Style", "Research Writing", "Creative Writing"],
+    },
+    "Foreign Languages / Linguistics": {
+        "keywords": ["ISR", "C2", "communications"],
+        "description": "Military linguists and intelligence analysts with language skills are among the most in-demand personnel in DoD. Arabic, Mandarin, Russian, Farsi, Korean are highest priority.",
+        "generic_courses": ["Language Courses (target language)", "Linguistics Theory", "Translation", "Cultural Studies", "Phonology", "Sociolinguistics"],
+    },
+    "Philosophy": {
+        "keywords": ["C2", "AI/ML"],
+        "description": "AI ethics, autonomous weapons policy, and just war theory are growing fields at defense think tanks. Law schools recruit heavily from philosophy programs (JAG path).",
+        "generic_courses": ["Logic", "Ethics", "Philosophy of Mind", "Political Philosophy", "Epistemology", "Philosophy of AI"],
+    },
+
+    # ── Other ─────────────────────────────────────────────────────────────────
+    "Architecture": {
+        "keywords": ["logistics", "C2"],
+        "description": "Military construction (MILCON), fortification, and base planning are DoD functions managed by the Army Corps of Engineers. Unique niche for architects willing to do cleared work.",
+        "generic_courses": ["Architectural Design", "Structures", "Building Systems", "Construction Management", "Sustainable Design", "Urban Planning"],
+    },
+    "Education": {
+        "keywords": ["logistics", "C2"],
+        "description": "Military training, simulation-based instruction, and instructional design for technical programs are growing fields. Every branch runs large training organizations.",
+        "generic_courses": ["Curriculum Design", "Educational Psychology", "Instructional Technology", "Assessment", "Adult Learning", "E-Learning Development"],
+    },
+    "Pre-Law / Legal Studies": {
+        "keywords": ["cyber", "C2", "JADC2"],
+        "description": "JAG (Judge Advocate General) corps commissions lawyers as military officers. Cybersecurity law and defense acquisition law are civilian career specialties with strong demand.",
+        "generic_courses": ["Constitutional Law", "Contract Law", "Criminal Law", "International Law", "Legal Research & Writing", "Administrative Law"],
+    },
+    "Liberal Arts / Undecided": {
+        "keywords": ["C2", "ISR", "logistics"],
+        "description": "A broad liberal arts background is valued in intelligence analysis, program management, and policy roles. Use your electives strategically to build a technical minor.",
+        "generic_courses": ["Writing & Rhetoric", "Statistics", "Intro Economics", "Political Science", "Research Methods", "A technical elective"],
+    },
 }
 
 
@@ -940,6 +1107,93 @@ SCHOOL_DATABASE: list[dict] = [
         "notable_programs": ["LASP (Laboratory for Atmospheric and Space Physics)", "Colorado Space Grant Consortium"],
         "defense_connections": "Space Force Space Command is in Colorado Springs (1 hr south). Ball Aerospace, Lockheed Martin Space, ULA, SNC all recruit heavily.",
         "url": "https://www.colorado.edu",
+    },
+    # ---- POLICY / LAW / SOCIAL SCIENCES ----
+    {
+        "name": "Georgetown University",
+        "full_name": "Georgetown University",
+        "location": "Washington, D.C.",
+        "relevant_keywords": ["C2", "JADC2", "ISR", "cyber", "communications"],
+        "strong_majors": ["International Relations", "Political Science", "Public Policy", "Pre-Law / Legal Studies", "History"],
+        "defense_strength": "top_10",
+        "why": "Georgetown's School of Foreign Service is the most prestigious IR program in the US and places more students into national security careers than any other school. The location puts you inside the Beltway defense and intelligence community from day one.",
+        "notable_programs": ["School of Foreign Service", "Georgetown Security Studies Program", "Beeck Center"],
+        "defense_connections": "CIA, DIA, NSA, State Dept, RAND, CSIS — all recruit on campus. Pentagon is 15 minutes away.",
+        "url": "https://www.georgetown.edu",
+    },
+    {
+        "name": "George Washington University",
+        "full_name": "The George Washington University",
+        "location": "Washington, D.C.",
+        "relevant_keywords": ["C2", "JADC2", "cyber", "ISR", "communications", "logistics"],
+        "strong_majors": ["Political Science", "International Relations", "Public Policy", "Criminal Justice", "Cybersecurity"],
+        "defense_strength": "top_10",
+        "why": "GWU's location literally across from the State Dept and near all federal agencies makes it a launching pad for national security careers. Elliott School of International Affairs is top-ranked for IR and security studies.",
+        "notable_programs": ["Elliott School of International Affairs", "Center for Cyber & Homeland Security", "Institute for Security & Conflict Studies"],
+        "defense_connections": "State Dept, NSC, DHS, DoD all recruit from GWU. Many professors are former senior government officials.",
+        "url": "https://www.gwu.edu",
+    },
+    {
+        "name": "American University",
+        "full_name": "American University",
+        "location": "Washington, D.C.",
+        "relevant_keywords": ["C2", "JADC2", "ISR", "communications", "cyber"],
+        "strong_majors": ["International Relations", "Political Science", "Public Policy", "Journalism", "Communications"],
+        "defense_strength": "regional",
+        "why": "Strong School of International Service and proximity to D.C. policy circles. Good pipeline into think tanks, NGOs, and government communications roles.",
+        "notable_programs": ["School of International Service", "Washington Semester Program", "Center for Congressional & Presidential Studies"],
+        "defense_connections": "Think tanks (CSIS, Brookings, Wilson Center), State Dept, USAID, DoD civilian careers.",
+        "url": "https://www.american.edu",
+    },
+    # ---- HEALTH / PRE-MED ----
+    {
+        "name": "Johns Hopkins University",
+        "full_name": "Johns Hopkins University",
+        "location": "Baltimore, MD",
+        "relevant_keywords": ["cyber", "AI/ML", "ISR", "autonomy", "C2", "space", "nuclear", "logistics"],
+        "strong_majors": ["Computer Science", "Electrical Engineering", "Systems Engineering", "Pre-Medicine / Biology", "Public Health", "Applied Mathematics"],
+        "defense_strength": "top_5",
+        "why": "APL (Applied Physics Laboratory) is one of the largest DoD UARCs and is directly affiliated with JHU. Bloomberg School of Public Health is #1 ranked for biodefense. Students can work at APL as undergrads.",
+        "notable_programs": ["APL — Johns Hopkins Applied Physics Laboratory (DoD UARC)", "Bloomberg School of Public Health", "Whiting School of Engineering"],
+        "defense_connections": "APL is a DoD UARC — extremely close pipeline to cleared work. Navy, Missile Defense Agency, DARPA. Strong USUHS feeder for pre-med.",
+        "url": "https://www.jhu.edu",
+    },
+    {
+        "name": "Uniformed Services University",
+        "full_name": "Uniformed Services University of the Health Sciences",
+        "location": "Bethesda, MD",
+        "relevant_keywords": ["nuclear", "logistics"],
+        "strong_majors": ["Pre-Medicine / Biology", "Nursing", "Public Health"],
+        "defense_strength": "top_5",
+        "why": "USUHS is the US military's medical school — tuition is free in exchange for a service commitment. Graduates are commissioned as military officers and are among the most mission-focused physicians in the country.",
+        "notable_programs": ["F. Edward Hébert School of Medicine", "Graduate School of Nursing", "Postgraduate Dental College"],
+        "defense_connections": "Direct pipeline into military medicine — Walter Reed, Bethesda Naval Medical Center, VA hospitals worldwide.",
+        "url": "https://www.usuhs.edu",
+    },
+    # ---- BUSINESS / POLICY ----
+    {
+        "name": "Indiana University",
+        "full_name": "Indiana University Bloomington",
+        "location": "Bloomington, IN",
+        "relevant_keywords": ["cyber", "C2", "logistics", "communications"],
+        "strong_majors": ["Business Administration", "Finance", "Accounting", "Cybersecurity", "Public Policy"],
+        "defense_strength": "regional",
+        "why": "Kelley School of Business is top-15 nationally. Strong cybersecurity program (Center for Applied Cybersecurity Research). Good pipeline into defense contractor business functions and government financial management.",
+        "notable_programs": ["Kelley School of Business", "Center for Applied Cybersecurity Research (CACR)", "School of Public and Environmental Affairs (SPEA)"],
+        "defense_connections": "DFAS (Defense Finance and Accounting Service) HQ in Indianapolis, major DoD finance employer. Crane Naval Surface Warfare Center nearby.",
+        "url": "https://www.indiana.edu",
+    },
+    {
+        "name": "University of North Carolina at Chapel Hill",
+        "full_name": "University of North Carolina at Chapel Hill",
+        "location": "Chapel Hill, NC",
+        "relevant_keywords": ["logistics", "communications", "AI/ML", "nuclear", "C2"],
+        "strong_majors": ["Public Health", "Business Administration", "Communications", "Political Science", "Statistics / Data Science"],
+        "defense_strength": "regional",
+        "why": "Gillings School of Global Public Health is top-5 nationally for biodefense and epidemiology. Research Triangle proximity means easy access to RTI International, SAS Institute, and multiple defense contractors.",
+        "notable_programs": ["Gillings School of Global Public Health", "Kenan-Flagler Business School", "Hussman School of Journalism"],
+        "defense_connections": "Research Triangle Park — SAS, IBM, Cisco all have defense divisions there. Fort Bragg/Pope Army Airfield 1 hour away.",
+        "url": "https://www.unc.edu",
     },
     # ---- COMMUNICATIONS / WIRELESS ----
     {
