@@ -3,6 +3,7 @@ import { Card } from "./components/Card";
 import { Empty, ErrorState, Loading } from "./components/States";
 import { api } from "./api";
 import { useAsync } from "./hooks";
+import { CareerGuide } from "./views/CareerGuide";
 import { ContractorDetail } from "./views/ContractorDetail";
 import { Matrix } from "./views/Matrix";
 import { PatentTimeline } from "./views/PatentTimeline";
@@ -22,6 +23,7 @@ export default function App() {
   const sols = useAsync(() => api.solicitations(30), []);
   const patents = useAsync(() => api.patents(300), []);
   const health = useAsync(() => api.health(), []);
+  const recommendations = useAsync(() => api.recommendations(6), []);
 
   const totalContractDollars =
     aggregates.status === "ready"
@@ -114,6 +116,19 @@ export default function App() {
         {patents.status === "loading" && <Loading />}
         {patents.status === "error" && <ErrorState error={patents.error} />}
         {patents.status === "ready" && <PatentTimeline patents={patents.data} />}
+      </Card>
+
+      <Card
+        title="Career guide — Rutgers AAE"
+        subtitle="Recommendations driven by live contract momentum. What to study, where to apply, and which labs to join."
+      >
+        {recommendations.status === "loading" && <Loading />}
+        {recommendations.status === "error" && (
+          <ErrorState error={recommendations.error} />
+        )}
+        {recommendations.status === "ready" && (
+          <CareerGuide data={recommendations.data} />
+        )}
       </Card>
 
       <footer className="pb-4 text-center text-[11px] text-ink-600">

@@ -52,10 +52,80 @@ export type MatrixCell = {
   open_solicitations: number;
 };
 
+export type TrendCell = {
+  contract_amount_delta: number;
+  patent_count_delta: number;
+};
+
 export type Aggregates = {
   contractors: string[];
   tech_keywords: string[];
   matrix: MatrixCell[][];
+  trend: TrendCell[][];
+};
+
+export type SkillEntry = {
+  keyword: string;
+  momentum_score: number;
+  courses: string[];
+  skills: string[];
+  tools: string[];
+  why: string;
+};
+
+export type Club = {
+  name: string;
+  description: string;
+  relevant_keywords: string[];
+  how_to_join: string;
+};
+
+export type Scholarship = {
+  name: string;
+  sponsor: string;
+  amount: string;
+  deadline_note: string;
+  url: string;
+  relevant_keywords: string[];
+};
+
+export type RutgersLab = {
+  name: string;
+  department: string;
+  faculty: string;
+  relevant_keywords: string[];
+  description: string;
+  why_apply: string;
+  url: string;
+  how_to_apply: string;
+};
+
+export type ApplyNowItem = {
+  what: string;
+  type: string;
+  urgency: string;
+  effort: string;
+  payoff: string;
+  link: string;
+  relevant_keywords: string[];
+};
+
+export type CareerTimelineItem = {
+  year: string;
+  action: string;
+  rationale: string;
+  relevant_keywords: string[];
+};
+
+export type Recommendations = {
+  top_keywords: string[];
+  skills_map: SkillEntry[];
+  clubs: Club[];
+  scholarships: Scholarship[];
+  rutgers_labs: RutgersLab[];
+  apply_now: ApplyNowItem[];
+  career_timeline: CareerTimelineItem[];
+  top_contractors_by_keyword: Record<string, string[]>;
 };
 
 export type ContractorSummary = {
@@ -101,4 +171,6 @@ export const api = {
     get<SearchResults>(
       `/search?q=${encodeURIComponent(q)}&source=${source}&limit=${limit}`,
     ),
+  recommendations: (topN = 5) =>
+    get<Recommendations>(`/recommendations?top_n=${topN}`),
 };

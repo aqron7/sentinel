@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Aggregates, MatrixCell } from "../api";
+import { Aggregates, MatrixCell, TrendCell } from "../api";
 import { fmtUSDCompact } from "../format";
 
 type CellKey = "contract_amount" | "patent_count" | "open_solicitations";
@@ -80,18 +80,28 @@ export function Matrix({
               </th>
               {tech_keywords.map((kw, j) => {
                 const cell = matrix[i][j];
+                const trendCell: TrendCell | undefined = data.trend?.[i]?.[j];
                 const t = cellTotal(cell, maxes);
                 const has =
                   cell.contract_amount > 0 ||
                   cell.patent_count > 0 ||
                   cell.open_solicitations > 0;
-                const tip = `${c} - ${kw}\nContracts: ${fmtUSDCompact(cell.contract_amount)}\nPatents: ${cell.patent_count}\nOpen RFPs: ${cell.open_solicitations}`;
+                const delta = trendCell?.contract_amount_delta ?? 0;
+                const trendArrow =
+                  delta > 0.1 ? "▲" : delta < -0.1 ? "▼" : null;
+                const trendColor =
+                  delta > 0.1
+                    ? "text-emerald-400"
+                    : delta < -0.1
+                      ? "text-rose-400"
+                      : "";
+                const tip = `${c} - ${kw}\nContracts: ${fmtUSDCompact(cell.contract_amount)}\nPatents: ${cell.patent_count}\nOpen RFPs: ${cell.open_solicitations}\n30-day trend: ${delta > 0 ? "+" : ""}${(delta * 100).toFixed(0)}%`;
                 return (
                   <td key={kw} className="p-1 align-middle">
                     <div
                       title={tip}
                       className={clsx(
-                        "relative flex h-12 min-w-[44px] items-center justify-center rounded-md border text-[10px] font-mono transition-transform",
+                        "relative flex h-12 min-w-[44px] flex-col items-center justify-center rounded-md border text-[10px] font-mono transition-transform",
                         has
                           ? "border-ember-500/30 text-ember-100 hover:scale-[1.04]"
                           : "border-ink-800 text-ink-600",
@@ -106,6 +116,11 @@ export function Matrix({
                       }}
                     >
                       {has ? fmtUSDCompact(cell.contract_amount) : "-"}
+                      {trendArrow && has && (
+                        <span className={`text-[9px] leading-none ${trendColor}`}>
+                          {trendArrow}
+                        </span>
+                      )}
                     </div>
                   </td>
                 );

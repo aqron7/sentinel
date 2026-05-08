@@ -4,6 +4,7 @@ aggregate matrix that powers the dashboard."""
 import json
 import sqlite3
 from collections import defaultdict
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
@@ -12,6 +13,14 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
+from sentinel.career.knowledge import (
+    APPLY_NOW,
+    CAREER_TIMELINE,
+    CLUBS,
+    RUTGERS_LABS,
+    SCHOLARSHIPS,
+    SKILLS_MAP,
+)
 from sentinel.db.models import Award, Patent, Solicitation
 from sentinel.db.search import DB_PATH, ENGINE
 from sentinel.extract.prompts import TECH_KEYWORDS
@@ -170,41 +179,39 @@ def list_patents(
     return out
 
 
-@app.get("/aggregates")
-def aggregates() -> dict:
-    """Contractor x tech-keyword matrix used by the dashboard heatmap."""
-    contractors = list(CONTRACTOR_GROUPS.keys())
-
+def _build_matrix(
+    awards: list[Award],
+    patents: list[Patent],
+    solicitations: list[Solicitation],
+    contractors: list[str],
+) -> list[list[dict]]:
     contract_dollars: dict[tuple[str, str], float] = defaultdict(float)
     patent_count: dict[tuple[str, str], int] = defaultdict(int)
     open_sols: dict[tuple[str, str], int] = defaultdict(int)
 
-    with Session(ENGINE) as session:
-        for a in session.exec(select(Award)).all():
-            c = _canonical_contractor(a.recipient)
-            if not c:
-                continue
-            for kw in _parse_keywords(a.tech_keywords):
-                if kw in CANONICAL_KEYWORDS:
-                    contract_dollars[(c, kw)] += a.amount or 0.0
+    for a in awards:
+        c = _canonical_contractor(a.recipient)
+        if not c:
+            continue
+        for kw in _parse_keywords(a.tech_keywords):
+            if kw in CANONICAL_KEYWORDS:
+                contract_dollars[(c, kw)] += a.amount or 0.0
 
-        for p in session.exec(select(Patent)).all():
-            c = _canonical_contractor(p.assignee)
-            if not c:
-                continue
-            for kw in _parse_keywords(p.tech_keywords):
-                if kw in CANONICAL_KEYWORDS:
-                    patent_count[(c, kw)] += 1
+    for p in patents:
+        c = _canonical_contractor(p.assignee)
+        if not c:
+            continue
+        for kw in _parse_keywords(p.tech_keywords):
+            if kw in CANONICAL_KEYWORDS:
+                patent_count[(c, kw)] += 1
 
-        for s in session.exec(
-            select(Solicitation).where(Solicitation.status == "open_solicitation")
-        ).all():
-            c = _canonical_contractor((s.title or "") + " " + (s.agency or ""))
-            if not c:
-                continue
-            for kw in _parse_keywords(s.tech_keywords):
-                if kw in CANONICAL_KEYWORDS:
-                    open_sols[(c, kw)] += 1
+    for s in solicitations:
+        c = _canonical_contractor((s.title or "") + " " + (s.agency or ""))
+        if not c:
+            continue
+        for kw in _parse_keywords(s.tech_keywords):
+            if kw in CANONICAL_KEYWORDS:
+                open_sols[(c, kw)] += 1
 
     matrix: list[list[dict]] = []
     for c in contractors:
@@ -218,11 +225,174 @@ def aggregates() -> dict:
                 }
             )
         matrix.append(row)
+    return matrix
+
+
+@app.get("/aggregates")
+def aggregates() -> dict:
+    """Contractor x tech-keyword matrix with 30-day trend deltas."""
+    contractors = list(CONTRACTOR_GROUPS.keys())
+    now = datetime.utcnow()
+    cutoff_recent = now - timedelta(days=30)
+    cutoff_prior = now - timedelta(days=60)
+
+    with Session(ENGINE) as session:
+        all_awards = session.exec(select(Award)).all()
+        all_patents = session.exec(select(Patent)).all()
+        all_sols = session.exec(
+            select(Solicitation).where(Solicitation.status == "open_solicitation")
+        ).all()
+
+    def _after(fetched_at: datetime | None, cutoff: datetime) -> bool:
+        return fetched_at is not None and fetched_at >= cutoff
+
+    recent_awards = [a for a in all_awards if _after(a.fetched_at, cutoff_recent)]
+    prior_awards = [a for a in all_awards if _after(a.fetched_at, cutoff_prior) and not _after(a.fetched_at, cutoff_recent)]
+    recent_patents = [p for p in all_patents if _after(p.fetched_at, cutoff_recent)]
+    prior_patents = [p for p in all_patents if _after(p.fetched_at, cutoff_prior) and not _after(p.fetched_at, cutoff_recent)]
+
+    matrix_all = _build_matrix(all_awards, all_patents, all_sols, contractors)
+    matrix_recent = _build_matrix(recent_awards, recent_patents, all_sols, contractors)
+    matrix_prior = _build_matrix(prior_awards, prior_patents, [], contractors)
+
+    # Compute delta: positive = growing, negative = declining (clamped to [-1, 1])
+    def _delta(recent_val: float, prior_val: float) -> float:
+        if prior_val == 0:
+            return 1.0 if recent_val > 0 else 0.0
+        raw = (recent_val - prior_val) / prior_val
+        return max(-1.0, min(1.0, raw))
+
+    trend: list[list[dict]] = []
+    for i, c in enumerate(contractors):
+        row: list[dict] = []
+        for j in range(len(CANONICAL_KEYWORDS)):
+            r = matrix_recent[i][j]
+            p = matrix_prior[i][j]
+            row.append({
+                "contract_amount_delta": _delta(r["contract_amount"], p["contract_amount"]),
+                "patent_count_delta": _delta(r["patent_count"], p["patent_count"]),
+            })
+        trend.append(row)
 
     return {
         "contractors": contractors,
         "tech_keywords": CANONICAL_KEYWORDS,
-        "matrix": matrix,
+        "matrix": matrix_all,
+        "trend": trend,
+    }
+
+
+def _keyword_momentum_scores() -> dict[str, float]:
+    """Compute a single momentum score per tech keyword across all contractors."""
+    with Session(ENGINE) as session:
+        all_awards = session.exec(select(Award)).all()
+        all_patents = session.exec(select(Patent)).all()
+        all_sols = session.exec(
+            select(Solicitation).where(Solicitation.status == "open_solicitation")
+        ).all()
+
+    dollar_by_kw: dict[str, float] = defaultdict(float)
+    patent_by_kw: dict[str, int] = defaultdict(int)
+    sol_by_kw: dict[str, int] = defaultdict(int)
+
+    for a in all_awards:
+        for kw in _parse_keywords(a.tech_keywords):
+            if kw in CANONICAL_KEYWORDS:
+                dollar_by_kw[kw] += a.amount or 0.0
+
+    for p in all_patents:
+        for kw in _parse_keywords(p.tech_keywords):
+            if kw in CANONICAL_KEYWORDS:
+                patent_by_kw[kw] += 1
+
+    for s in all_sols:
+        for kw in _parse_keywords(s.tech_keywords):
+            if kw in CANONICAL_KEYWORDS:
+                sol_by_kw[kw] += 1
+
+    max_d = max(dollar_by_kw.values(), default=1.0) or 1.0
+    max_p = max(patent_by_kw.values(), default=1) or 1
+    max_s = max(sol_by_kw.values(), default=1) or 1
+
+    scores: dict[str, float] = {}
+    for kw in CANONICAL_KEYWORDS:
+        scores[kw] = (
+            0.6 * dollar_by_kw[kw] / max_d
+            + 0.25 * patent_by_kw[kw] / max_p
+            + 0.15 * sol_by_kw[kw] / max_s
+        )
+    return scores
+
+
+@app.get("/recommendations")
+def recommendations(top_n: int = Query(5, le=10)) -> dict:
+    """Career guidance for an incoming Rutgers AAE student based on contract momentum."""
+    scores = _keyword_momentum_scores()
+    ranked = sorted(CANONICAL_KEYWORDS, key=lambda k: -scores[k])
+    top_keywords = ranked[:top_n]
+
+    skills: list[dict] = []
+    for kw in top_keywords:
+        sm = SKILLS_MAP.get(kw)
+        if sm:
+            skills.append({
+                "keyword": kw,
+                "momentum_score": round(scores[kw], 3),
+                "courses": sm["courses"],
+                "skills": sm["skills"],
+                "tools": sm["tools"],
+                "why": sm["why"],
+            })
+
+    relevant_clubs = [
+        c for c in CLUBS
+        if any(kw in c["relevant_keywords"] for kw in top_keywords)
+    ]
+
+    relevant_scholarships = [
+        s for s in SCHOLARSHIPS
+        if any(kw in s["relevant_keywords"] for kw in top_keywords)
+    ]
+
+    relevant_labs = [
+        lab for lab in RUTGERS_LABS
+        if any(kw in lab.get("relevant_keywords", []) for kw in top_keywords)
+    ]
+
+    relevant_apply_now = [
+        a for a in APPLY_NOW
+        if any(kw in a["relevant_keywords"] for kw in top_keywords)
+    ]
+
+    # Top contractors per top keyword
+    with Session(ENGINE) as session:
+        all_awards = session.exec(select(Award)).all()
+
+    contractor_kw_dollars: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+    for a in all_awards:
+        c = _canonical_contractor(a.recipient)
+        if not c:
+            continue
+        for kw in _parse_keywords(a.tech_keywords):
+            if kw in top_keywords:
+                contractor_kw_dollars[kw][c] += a.amount or 0.0
+
+    top_contractors_by_kw: dict[str, list[str]] = {}
+    for kw in top_keywords:
+        sorted_contractors = sorted(
+            contractor_kw_dollars[kw], key=lambda c: -contractor_kw_dollars[kw][c]
+        )
+        top_contractors_by_kw[kw] = sorted_contractors[:3]
+
+    return {
+        "top_keywords": top_keywords,
+        "skills_map": skills,
+        "clubs": relevant_clubs,
+        "scholarships": relevant_scholarships,
+        "rutgers_labs": relevant_labs,
+        "apply_now": relevant_apply_now,
+        "career_timeline": CAREER_TIMELINE,
+        "top_contractors_by_keyword": top_contractors_by_kw,
     }
 
 
